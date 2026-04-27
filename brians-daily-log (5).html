@@ -131,7 +131,13 @@ body{background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:
 .mood-option span{font-family:var(--mono);font-size:.5rem;letter-spacing:.08em;text-transform:uppercase}
 .blue-field{margin-bottom:1.2rem}
 .field-lbl{font-family:var(--mono);font-size:.5rem;letter-spacing:.12em;text-transform:uppercase;color:var(--muted);display:block;margin-bottom:.5rem}
-.j-entry-hd{font-family:var(--mono);font-size:.52rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);padding-bottom:1rem;border-bottom:1px solid var(--rule);margin-bottom:1.2rem}
+/* ── STRAVA ── */
+.strava-btn{display:inline-flex;align-items:center;gap:.6rem;font-family:var(--mono);font-size:.55rem;letter-spacing:.1em;text-transform:uppercase;background:#fc4c02;color:#fff;border:none;padding:.6rem 1.3rem;cursor:pointer;transition:opacity .2s}
+.strava-btn:hover{opacity:.85}
+.strava-data-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin:1.5rem 0;border:1px solid var(--rule);padding:1.5rem}
+.strava-stat-label{font-family:var(--mono);font-size:.48rem;letter-spacing:.15em;text-transform:uppercase;color:var(--muted);margin-bottom:.3rem}
+.strava-stat-val{font-family:var(--serif);font-size:1.8rem;font-weight:400;line-height:1}
+.strava-activity-name{font-family:var(--serif);font-size:1rem;font-style:italic;color:var(--muted);margin-bottom:1.2rem}
 .j-entry-text{font-family:var(--serif);font-size:1.05rem;line-height:1.8;white-space:pre-wrap}
 .j-entry-empty{font-family:var(--serif);font-size:1.05rem;color:var(--muted);font-style:italic}
 .j-depth-tag{font-family:var(--mono);font-size:.5rem;color:var(--muted);margin-top:.6rem}
@@ -876,7 +882,78 @@ function renderJournal(){
   });
 }
 
-function renderPerf(){
+/* ══════ STRAVA ══════ */
+const STRAVA_CLIENT_ID='228279';
+const STRAVA_CLIENT_SECRET='c92dad02ff3834b0dbc1420a21608e5020ece7d7';
+const STRAVA_REDIRECT='https://wibberley18.github.io/Dashboard';
+const STRAVA_SCOPE='read,activity:read_all';
+
+function stravaAuthURL(){return `https://www.strava.com/oauth/authorize?client_id=${STRAVA_CLIENT_ID}&response_type=code&redirect_uri=${encodeURIComponent(STRAVA_REDIRECT)}&approval_prompt=auto&scope=${STRAVA_SCOPE}`;}
+async function stravaExchangeToken(code){const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:STRAVA_CLIENT_ID,client_secret:STRAVA_CLIENT_SECRET,code,grant_type:'authorization_code'})});return r.json();}
+async function stravaRefreshToken(rt){const r=await fetch('https://www.strava.com/oauth/token',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({client_id:STRAVA_CLIENT_ID,client_secret:STRAVA_CLIENT_SECRET,refresh_token:rt,grant_type:'refresh_token'})});return r.json();}
+async function stravaGetLatestActivity(at){const r=await fetch('https://www.strava.com/api/v3/athlete/activities?per_page=1',{headers:{Authorization:`Bearer ${at}`}});return r.json();}
+async function stravaGetAthlete(at){const r=await fetch('https://www.strava.com/api/v3/athlete',{headers:{Authorization:`Bearer ${at}`}});return r.json();}
+function mToKm(m){return(m/1000).toFixed(2);}
+function secToPace(sec,meters){if(!meters)return'—';const pace=sec/meters*1000;const m=Math.floor(pace/60);const s=Math.round(pace%60);return`${m}:${s.toString().padStart(2,'0')}`;}
+function secToTime(sec){const h=Math.floor(sec/3600);const m=Math.floor((sec%3600)/60);const s=sec%60;return h?`${h}:${m.toString().padStart(2,'0')}:${s.toString().padStart(2,'0')}`:`${m}:${s.toString().padStart(2,'0')}`;}
+
+async function initStrava(){
+  const el=document.getElementById('strava-section');if(!el)return;
+  const params=new URLSearchParams(window.location.search);
+  const code=params.get('code');
+  if(code){
+    el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Connecting to Strava…</div>`;
+    try{
+      const data=await stravaExchangeToken(code);
+      if(data.access_token){S.stravaToken={access:data.access_token,refresh:data.refresh_token,expires:data.expires_at};save();window.history.replaceState({},'',window.location.pathname);await loadStravaData();}
+    }catch(e){el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Connection failed — try again</div>`;}
+    return;
+  }
+  if(S.stravaToken){
+    if(Date.now()/1000>S.stravaToken.expires-300){try{const data=await stravaRefreshToken(S.stravaToken.refresh);S.stravaToken={access:data.access_token,refresh:data.refresh_token,expires:data.expires_at};save();}catch(e){}}
+    await loadStravaData();return;
+  }
+  el.innerHTML=`
+    <div style="margin-bottom:1.5rem">
+      <div class="cs-label" style="margin-bottom:.3rem">Strava</div>
+      <div class="cs-sub" style="margin-bottom:1rem">Connect to auto-fill your latest activity data</div>
+      <button class="strava-btn" onclick="window.location.href='${stravaAuthURL()}'">
+        <svg width="14" height="14" viewBox="0 0 24 24" fill="white"><path d="M15.387 17.944l-2.089-4.116h-3.065L15.387 24l5.15-10.172h-3.066m-7.008-5.599l2.836 5.598h4.172L10.463 0l-7 13.828h4.169"/></svg>
+        Connect Strava
+      </button>
+    </div>`;
+}
+
+async function loadStravaData(){
+  const el=document.getElementById('strava-section');if(!el||!S.stravaToken)return;
+  el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Loading Strava data…</div>`;
+  try{
+    const[activities,athlete]=await Promise.all([stravaGetLatestActivity(S.stravaToken.access),stravaGetAthlete(S.stravaToken.access)]);
+    const a=activities[0];
+    if(!a){el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Connected as ${athlete.firstname} ${athlete.lastname} · No recent activities</div>`;return;}
+    const dist=mToKm(a.distance),pace=secToPace(a.moving_time,a.distance),time=secToTime(a.moving_time),hr=a.average_heartrate?Math.round(a.average_heartrate):'—',elev=a.total_elevation_gain?`${Math.round(a.total_elevation_gain)}m`:'—',date=new Date(a.start_date_local).toLocaleDateString('en-AU',{weekday:'short',day:'numeric',month:'short'});
+    S.perf['p-dist']=`${dist} km`;S.perf['p-time']=time;S.perf['p-pace']=`${pace} /km`;S.perf['p-hr']=hr!=='—'?`${hr} bpm`:'';save();renderPerf();
+    el.innerHTML=`
+      <div style="margin-bottom:1.5rem">
+        <div class="cs-label" style="margin-bottom:.3rem">Strava — <span style="color:var(--ink)">${athlete.firstname} ${athlete.lastname}</span></div>
+        <div class="strava-activity-name">${a.name} · ${date}</div>
+        <div class="strava-data-grid">
+          <div><div class="strava-stat-label">Distance</div><div class="strava-stat-val">${dist}<span style="font-size:1rem"> km</span></div></div>
+          <div><div class="strava-stat-label">Time</div><div class="strava-stat-val" style="font-size:1.3rem">${time}</div></div>
+          <div><div class="strava-stat-label">Pace</div><div class="strava-stat-val" style="font-size:1.3rem">${pace}<span style="font-size:.9rem"> /km</span></div></div>
+          <div><div class="strava-stat-label">Avg HR</div><div class="strava-stat-val">${hr}${hr!=='—'?'<span style="font-size:1rem"> bpm</span>':''}</div></div>
+          <div><div class="strava-stat-label">Elevation</div><div class="strava-stat-val" style="font-size:1.3rem">${elev}</div></div>
+          <div><div class="strava-stat-label">Type</div><div class="strava-stat-val" style="font-size:1.1rem;font-style:italic">${a.sport_type||a.type}</div></div>
+        </div>
+        <button class="btn-line" onclick="loadStravaData()">Refresh</button>&nbsp;&nbsp;
+        <button class="btn-line" onclick="disconnectStrava()">Disconnect</button>
+      </div>`;
+  }catch(e){el.innerHTML=`<div style="font-family:var(--mono);font-size:.55rem;color:var(--muted)">Error loading — <button class="btn-line" onclick="initStrava()">Retry</button></div>`;}
+}
+
+function disconnectStrava(){delete S.stravaToken;save();initStrava();}
+
+/* ══════ PERFORMANCE ══════ */
   const grid=document.getElementById('perf-grid');grid.innerHTML='';
   PERF_FIELDS.forEach(f=>{
     const card=document.createElement('div');card.className='perf-card';
