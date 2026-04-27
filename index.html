@@ -261,13 +261,17 @@ body{background:var(--bg);color:var(--ink);font-family:var(--serif);line-height:
       <span class="ch-arrow">+</span>
     </button>
     <div class="ch-body"><div class="ch-body-inner">
-      <div class="connect-strip">
-        <div><div class="cs-label">Strava / Garmin</div><div class="cs-sub">API integration — connect via app settings</div></div>
-        <button class="btn-line">Connect</button>
-      </div>
-      <div class="perf-grid" id="perf-grid"></div>
-      <button class="btn-solid" onclick="savePerf()">Save Performance Data</button>
-    </div></div>
+        <div id="strava-section"></div>
+        <div style="margin-top:2rem;border-top:1px solid var(--rule);padding-top:2rem">
+          <div class="cs-label" style="margin-bottom:.3rem">Garmin</div>
+          <div class="cs-sub" style="margin-bottom:1rem">Garmin syncs automatically to Strava — connect Strava above to pull Garmin data</div>
+        </div>
+        <div style="margin-top:2rem;border-top:1px solid var(--rule);padding-top:2rem">
+          <div class="cs-label" style="margin-bottom:.8rem">Manual Entry</div>
+          <div class="perf-grid" id="perf-grid"></div>
+          <button class="btn-solid" onclick="savePerf()">Save Manual Data</button>
+        </div>
+      </div></div>
   </div>
 </div>
 
@@ -912,7 +916,7 @@ function openFullscreen(){
 function toast(msg){const el=document.getElementById('toast');el.textContent=msg;el.classList.add('show');clearTimeout(el._t);el._t=setTimeout(()=>el.classList.remove('show'),2500);}
 
 setInterval(renderHeader,30000);
-renderHeader();renderTasks();renderWellness();renderGym();renderJournal();renderPerf();renderXP();save();
+renderHeader();renderTasks();renderWellness();renderGym();renderJournal();renderPerf();renderXP();initStrava();save();
 </script>
 </body>
 </html>
