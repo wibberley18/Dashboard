@@ -1,0 +1,1426 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<title>Command — Brian's Daily Dashboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com"/>
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin/>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;1,300;1,400;1,600&family=Jost:wght@200;300;400;500&family=DM+Mono:wght@300;400&display=swap" rel="stylesheet"/>
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0;}
+:root{
+  --paper:#F7F4EF;--ink:#1a1916;--ink2:#5a5750;--ink3:#9a9690;
+  --rule:rgba(26,25,22,.10);--rule2:rgba(26,25,22,.05);
+  --gold:#c8a96e;--green:#6a9e6a;--red:#9e6a6a;--max:1200px;--wine:#7a2a3a;
+}
+html{background:var(--paper);scroll-behavior:smooth;}
+body{background:var(--paper);color:var(--ink);font-family:'Jost',sans-serif;-webkit-font-smoothing:antialiased;}
+
+/* NAV */
+nav{position:sticky;top:0;z-index:200;background:rgba(247,244,239,.93);backdrop-filter:blur(16px);border-bottom:1px solid var(--rule);height:60px;display:flex;align-items:stretch;}
+.nav-inner{max-width:var(--max);width:100%;margin:0 auto;padding:0 56px;display:flex;align-items:center;justify-content:space-between;}
+.nav-brand{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;letter-spacing:.18em;text-transform:uppercase;color:var(--ink);text-decoration:none;}
+.nav-links{display:flex;gap:28px;}
+.nav-link{font-size:8px;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);text-decoration:none;transition:color .2s;}
+.nav-link:hover{color:var(--ink);}
+.nav-right{font-family:'DM Mono',monospace;display:flex;flex-direction:column;align-items:flex-end;gap:1px;}
+#nt{font-size:14px;color:var(--ink);letter-spacing:.02em;}
+#nd{font-size:8px;color:var(--ink3);letter-spacing:.06em;text-transform:uppercase;}
+
+/* PAGE */
+.page{max-width:var(--max);margin:0 auto;padding:0 56px;}
+
+/* HERO */
+.hero{min-height:40vh;display:flex;flex-direction:column;justify-content:flex-end;padding:72px 0 56px;border-bottom:1px solid var(--rule);}
+.hero-greet{font-size:9px;font-weight:300;letter-spacing:.24em;text-transform:uppercase;color:var(--ink3);margin-bottom:16px;}
+.hero-title{font-family:'Cormorant Garamond',serif;font-size:clamp(60px,8vw,104px);font-weight:300;line-height:.92;letter-spacing:-.02em;color:var(--ink);}
+.hero-title em{font-style:italic;color:var(--ink2);}
+.hero-sub{margin-top:24px;font-size:9px;font-weight:300;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);line-height:2;}
+
+/* SECTIONS */
+.section{border-bottom:1px solid var(--rule);transition:background .45s;}
+.section:hover{background:rgba(26,25,22,.015);}
+.sh{display:flex;align-items:center;justify-content:space-between;padding:38px 0;cursor:pointer;transition:padding .5s cubic-bezier(.4,0,.2,1);}
+.section:hover .sh{padding-top:50px;padding-bottom:50px;}
+.sh-l{display:flex;align-items:baseline;gap:20px;}
+.sh-num{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);letter-spacing:.1em;}
+.sh-title{font-family:'Cormorant Garamond',serif;font-size:clamp(34px,4vw,56px);font-weight:300;line-height:1;letter-spacing:-.01em;color:var(--ink);transition:font-size .45s cubic-bezier(.4,0,.2,1),letter-spacing .45s;}
+.section:hover .sh-title{font-size:clamp(44px,5.5vw,74px);letter-spacing:-.025em;}
+.sh-r{display:flex;align-items:center;gap:18px;}
+.sh-sub{font-size:9px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);transition:opacity .3s;}
+.section:hover .sh-sub{opacity:0;}
+.sh-hint{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);opacity:0;transform:translateX(-8px);transition:opacity .35s,transform .35s;}
+.section:hover .sh-hint{opacity:1;transform:translateX(0);}
+.sh-badge{font-size:9px;letter-spacing:.14em;text-transform:uppercase;}
+.sh-badge.g{color:var(--green);}
+.sh-badge.a{color:var(--gold);}
+.sh-badge.m{color:var(--ink3);}.sh-badge.w{color:var(--wine);}
+
+/* BODY */
+.sb{max-height:0;overflow:hidden;opacity:0;transition:max-height .65s cubic-bezier(.4,0,.2,1),opacity .5s;}
+.section:hover .sb{max-height:3000px;opacity:1;padding-bottom:60px;}
+.br{height:1px;background:var(--rule);margin-bottom:32px;}
+
+/* LAYOUT */
+.two{display:grid;grid-template-columns:1fr 1fr;gap:52px;}
+.three{display:grid;grid-template-columns:1fr 1fr 1fr;gap:24px;}
+.four{display:grid;grid-template-columns:1fr 1fr 1fr 1fr;gap:0;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+
+/* METRICS */
+.mstrip{display:flex;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:24px;}
+.met{flex:1;padding:22px 0;border-right:1px solid var(--rule);padding-right:24px;}
+.met:first-child{padding-left:0;}
+.met:last-child{border-right:none;}
+.met-n{font-family:'Cormorant Garamond',serif;font-size:46px;font-weight:300;line-height:1;color:var(--ink);}
+.met-n span{font-size:16px;color:var(--ink3);}
+.met-l{font-size:8px;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);margin-top:4px;}
+
+/* PROGRESS */
+.prog{margin-bottom:22px;}
+.prog-top{display:flex;justify-content:space-between;margin-bottom:7px;}
+.prog-l{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);}
+.prog-track{height:1px;background:var(--rule);position:relative;}
+.prog-fill{height:1px;background:var(--ink);position:absolute;left:0;top:0;transition:width .7s cubic-bezier(.4,0,.2,1);}
+.warn{font-size:10px;font-weight:300;color:var(--gold);padding:10px 0;border-top:1px solid rgba(200,169,110,.2);margin-bottom:16px;display:none;}
+.warn.on{display:block;}
+
+/* INPUTS */
+.inrow{display:flex;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:14px;}
+.inrow input{flex:1;font-size:13px;font-weight:300;font-family:'Jost',sans-serif;padding:14px 0;border:none;background:transparent;color:var(--ink);outline:none;letter-spacing:.04em;}
+.inrow input::placeholder{color:var(--ink3);}
+.gbtn{font-size:8px;font-weight:400;letter-spacing:.2em;text-transform:uppercase;padding:14px 20px;border:none;border-left:1px solid var(--rule);background:transparent;color:var(--ink2);cursor:pointer;font-family:'Jost',sans-serif;transition:background .2s,color .2s;white-space:nowrap;}
+.gbtn:hover{background:var(--ink);color:var(--paper);}
+
+/* LOG */
+.log-e{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);padding:6px 0;border-bottom:1px solid var(--rule2);letter-spacing:.04em;}
+
+/* EMAIL */
+.email-sect-lbl{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);padding:10px 0 8px;border-bottom:1px solid var(--rule2);margin-bottom:0;display:flex;align-items:center;gap:6px;}
+.email-sect-lbl img{width:12px;height:12px;border-radius:2px;}
+.erow{display:flex;align-items:flex-start;gap:12px;padding:12px 0;border-bottom:1px solid var(--rule2);cursor:pointer;transition:background .12s;}
+.erow:hover{background:rgba(26,25,22,.02);}
+.edot{width:4px;height:4px;border-radius:50%;flex-shrink:0;margin-top:7px;}
+.edot.u{background:var(--ink);}
+.edot.r{background:transparent;border:1px solid var(--ink3);}
+.ei{flex:1;min-width:0;}
+.esender{font-family:'Cormorant Garamond',serif;font-size:15px;font-weight:400;color:var(--ink);}
+.esubj{font-size:11px;font-weight:300;color:var(--ink3);white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-top:1px;}
+.etime{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);flex-shrink:0;}
+.cat-badge{font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 7px;border:1px solid var(--rule);color:var(--ink3);flex-shrink:0;align-self:center;}
+
+/* ACTION LINK */
+.al{font-size:9px;font-weight:300;letter-spacing:.2em;text-transform:uppercase;color:var(--ink2);padding:13px 0;border-top:1px solid var(--rule);display:flex;align-items:center;cursor:pointer;transition:color .2s;background:none;border-left:none;border-right:none;border-bottom:none;width:100%;font-family:'Jost',sans-serif;text-decoration:none;}
+.al::after{content:'→';margin-left:auto;font-size:11px;color:var(--ink3);transition:transform .2s;}
+.al:hover{color:var(--ink);}
+.al:hover::after{transform:translateX(4px);}
+
+/* HEALTH RINGS */
+.rings-wrap{display:flex;align-items:center;gap:36px;margin-bottom:28px;}
+.rings-wrap svg{transform:rotate(-90deg);flex-shrink:0;}
+.rleg{flex:1;}
+.rrow{display:flex;align-items:center;justify-content:space-between;padding:7px 0;border-bottom:1px solid var(--rule2);}
+.rrow:last-child{border-bottom:none;}
+.rdot{width:6px;height:6px;flex-shrink:0;border-radius:1px;}
+.rlbl{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-left:9px;flex:1;}
+.rval{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--ink);}
+.runit{font-size:9px;color:var(--ink3);margin-left:3px;}
+
+/* DATA CELL */
+.dc{border-top:1px solid var(--rule);padding-top:12px;}
+.dcv{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;line-height:1;color:var(--ink);}
+.dcu{font-size:11px;color:var(--ink3);margin-left:3px;}
+.dcl{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-top:3px;}
+.dcb{height:1px;background:var(--rule);margin-top:10px;}
+.dcbf{height:1px;background:var(--ink);transition:width .9s cubic-bezier(.4,0,.2,1);}
+
+/* NOOM STRIP */
+.nstrip{display:grid;grid-template-columns:repeat(4,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+.nstrip+.nstrip{border-top:none;margin-bottom:24px;}
+.nc{padding:20px 0;border-right:1px solid var(--rule);padding-right:16px;}
+.nc:first-child{padding-left:0;}
+.nc:last-child{border-right:none;}
+.ncv{font-family:'Cormorant Garamond',serif;font-size:32px;font-weight:300;line-height:1;color:var(--ink);}
+.ncl{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-top:3px;}
+.ncb{height:1px;background:var(--rule);margin-top:10px;}
+.ncbf{height:1px;}
+
+/* FORM */
+.fc{max-height:0;overflow:hidden;opacity:0;transition:max-height .55s cubic-bezier(.4,0,.2,1),opacity .45s;}
+.fc.open{max-height:700px;opacity:1;}
+.fgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:20px;padding:20px 0;border-top:1px solid var(--rule);}
+.ff{display:flex;flex-direction:column;gap:4px;border-bottom:1px solid var(--rule);padding-bottom:7px;}
+.ff label{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);}
+.ff input{font-size:14px;font-family:'Cormorant Garamond',serif;font-weight:300;border:none;background:transparent;color:var(--ink);outline:none;padding:3px 0;}
+.ff input::placeholder{color:var(--ink3);font-style:italic;}
+.fa{display:flex;gap:14px;padding-top:14px;}
+
+/* WEATHER */
+.wx-t{font-family:'Cormorant Garamond',serif;font-size:clamp(76px,10vw,124px);font-weight:300;line-height:.9;letter-spacing:-.03em;color:var(--ink);}
+.wx-c{font-family:'Cormorant Garamond',serif;font-size:26px;font-style:italic;font-weight:300;color:var(--ink2);margin-top:7px;}
+.wx-f{font-size:9px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-top:7px;}
+.wx-sr{display:flex;gap:40px;margin-top:24px;border-top:1px solid var(--rule);padding-top:18px;}
+.wx-s{display:flex;flex-direction:column;gap:3px;}
+.wx-sv{font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;color:var(--ink);}
+.wx-sl{font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);}
+
+/* SPORT */
+.sgrid{display:grid;grid-template-columns:repeat(5,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:22px;}
+.stile{padding:16px 0;border-right:1px solid var(--rule);padding-right:14px;cursor:pointer;transition:background .2s;}
+.stile:first-child{padding-left:0;}
+.stile:nth-child(5n){border-right:none;}
+.stile:hover,.stile.active{background:var(--ink);}
+.stile:hover .stn,.stile.active .stn,.stile:hover .sts,.stile.active .sts{color:var(--paper);opacity:1;}
+.stico{width:15px;height:15px;object-fit:contain;border-radius:2px;margin-bottom:7px;display:block;transition:opacity .2s;}
+.stile:hover .stico,.stile.active .stico{opacity:0;}
+.stn{font-size:9px;font-weight:400;letter-spacing:.04em;color:var(--ink);transition:color .2s;line-height:1.3;}
+.sts{font-size:8px;letter-spacing:.1em;text-transform:uppercase;color:var(--ink3);margin-top:2px;transition:color .2s,opacity .2s;}
+
+/* NEWS */
+.stabs{display:flex;overflow-x:auto;scrollbar-width:none;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);}
+.stabs::-webkit-scrollbar{display:none;}
+.stab{font-size:8px;letter-spacing:.2em;text-transform:uppercase;padding:12px 18px;border-right:1px solid var(--rule);cursor:pointer;color:var(--ink3);white-space:nowrap;transition:all .2s;flex-shrink:0;display:flex;align-items:center;gap:6px;font-family:'Jost',sans-serif;font-weight:300;}
+.stab img{width:12px;height:12px;border-radius:2px;object-fit:contain;}
+.stab:hover,.stab.active{background:var(--ink);color:var(--paper);}
+.hcard{position:relative;overflow:hidden;border-bottom:1px solid var(--rule);cursor:pointer;}
+.himg{width:100%;height:380px;object-fit:cover;display:block;transition:filter .5s,transform .65s;filter:brightness(.88);}
+.hcard:hover .himg{filter:brightness(.65);transform:scale(1.025);}
+.hov{position:absolute;inset:0;background:linear-gradient(to top,rgba(26,25,22,.78) 0%,rgba(26,25,22,.05) 55%,transparent 100%);pointer-events:none;}
+.hcap{position:absolute;bottom:0;left:0;right:0;padding:28px 32px;}
+.hcsrc{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:rgba(247,244,239,.5);margin-bottom:9px;}
+.hched{font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;font-weight:300;line-height:1.2;color:var(--paper);max-width:560px;}
+.hctag{display:inline-block;margin-top:10px;font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:rgba(247,244,239,.55);border:1px solid rgba(247,244,239,.25);padding:3px 9px;}
+.twoup{display:grid;grid-template-columns:1fr 1fr;border-bottom:1px solid var(--rule);}
+.tuc{overflow:hidden;border-right:1px solid var(--rule);cursor:pointer;}
+.tuc:last-child{border-right:none;}
+.tuiw{overflow:hidden;height:200px;}
+.tui{width:100%;height:200px;object-fit:cover;display:block;transition:filter .4s,transform .55s;filter:brightness(.85);}
+.tuc:hover .tui{filter:brightness(.65);transform:scale(1.05);}
+.tub{padding:18px 20px 22px;}
+.tusrc{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;}
+.tuhed{font-family:'Cormorant Garamond',serif;font-size:17px;font-weight:400;line-height:1.3;color:var(--ink);}
+.tudeck{font-size:11px;font-weight:300;color:var(--ink3);margin-top:5px;line-height:1.6;}
+.lcard{display:flex;align-items:stretch;border-bottom:1px solid var(--rule);cursor:pointer;transition:background .2s;}
+.lcard:hover{background:rgba(26,25,22,.02);}
+.lcb{flex:1;padding:20px 20px 20px 0;}
+.lcsrc{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);margin-bottom:7px;}
+.lched{font-family:'Cormorant Garamond',serif;font-size:19px;font-weight:400;line-height:1.3;color:var(--ink);}
+.lcdeck{font-size:11px;font-weight:300;color:var(--ink2);margin-top:5px;line-height:1.6;}
+.lcat{display:inline-block;margin-top:9px;font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink3);padding-bottom:1px;border-bottom:1px solid var(--rule);}
+.lcthumb{width:140px;flex-shrink:0;overflow:hidden;}
+.lcthumb img{width:100%;height:100%;object-fit:cover;display:block;filter:brightness(.85);transition:filter .4s;}
+.lcard:hover .lcthumb img{filter:brightness(.7);}
+.nstub{font-family:'Cormorant Garamond',serif;font-style:italic;font-size:18px;color:var(--ink3);padding:28px 0;}
+
+/* TICKER */
+.ticker{overflow:hidden;border-bottom:1px solid var(--rule);}
+.ticker-in{display:flex;width:max-content;animation:tick 36s linear infinite;}
+.ticker-in:hover{animation-play-state:paused;}
+.ti{font-family:'DM Mono',monospace;font-size:8px;color:var(--ink3);letter-spacing:.16em;text-transform:uppercase;padding:8px 24px;border-right:1px solid var(--rule);white-space:nowrap;}
+@keyframes tick{from{transform:translateX(0);}to{transform:translateX(-50%);}}
+
+/* CALENDAR */
+.cal-grid{display:grid;grid-template-columns:repeat(7,1fr);border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:20px;}
+.cal-day-hdr{padding:8px 0;text-align:center;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);border-right:1px solid var(--rule2);}
+.cal-day-hdr:last-child{border-right:none;}
+.cal-day{padding:10px 8px;min-height:52px;border-right:1px solid var(--rule2);border-top:1px solid var(--rule2);font-size:10px;color:var(--ink);cursor:pointer;transition:background .15s;position:relative;}
+.cal-day:nth-child(7n){border-right:none;}
+.cal-day:hover{background:rgba(26,25,22,.04);}
+.cal-day.today{background:var(--ink);}
+.cal-day.today .cal-day-num{color:var(--paper);}
+.cal-day.has-event::after{content:'';position:absolute;bottom:5px;left:50%;transform:translateX(-50%);width:3px;height:3px;border-radius:50%;background:var(--gold);}
+.cal-day.today.has-event::after{background:var(--paper);}
+.cal-day-num{font-family:'DM Mono',monospace;font-size:10px;display:block;}
+.cal-day.other-month .cal-day-num{color:var(--ink3);}
+.event-list{display:flex;flex-direction:column;gap:0;margin-bottom:16px;}
+.event-item{display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--rule2);}
+.event-item:last-child{border-bottom:none;}
+.event-date{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);min-width:48px;}
+.event-dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
+.event-title{font-family:'Cormorant Garamond',serif;font-size:16px;font-weight:400;color:var(--ink);}
+.event-badge{font-size:8px;letter-spacing:.1em;text-transform:uppercase;padding:2px 8px;border:1px solid var(--rule);color:var(--ink3);margin-left:auto;white-space:nowrap;}
+
+/* TODAY EMBED */
+.embed-hdr{display:flex;align-items:center;justify-content:space-between;padding:12px 0;border-bottom:1px solid var(--rule);margin-bottom:18px;}
+.embed-title{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);display:flex;align-items:center;gap:8px;}
+.embed-live{width:5px;height:5px;border-radius:50%;background:var(--green);animation:pulse 2s infinite;}
+@keyframes pulse{0%,100%{opacity:1;}50%{opacity:.3;}}
+.embed-open{font-size:8px;letter-spacing:.16em;text-transform:uppercase;color:var(--ink2);text-decoration:none;transition:color .2s;}
+.embed-open:hover{color:var(--ink);}
+iframe.dash{width:100%;height:580px;border:1px solid var(--rule);display:block;}
+
+/* TODAY STATS */
+.tod-stats{display:flex;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:20px;}
+.tod-s{flex:1;padding:20px 0;border-right:1px solid var(--rule);padding-right:20px;}
+.tod-s:first-child{padding-left:0;}
+.tod-s:last-child{border-right:none;}
+.tod-sn{font-family:'Cormorant Garamond',serif;font-size:42px;font-weight:300;line-height:1;color:var(--ink);}
+.tod-sl{font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);margin-top:3px;}
+
+/* TOD BLOCKS */
+.tod-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--rule);margin-bottom:24px;}
+.tblock{padding:24px 0 24px;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding-right:24px;cursor:pointer;transition:background .18s;}
+.tblock:nth-child(2n){border-right:none;padding-right:0;padding-left:24px;}
+.tblock:nth-last-child(-n+2){border-bottom:none;}
+.tblock:hover{background:rgba(26,25,22,.025);}
+.tblock-time{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);margin-bottom:9px;display:flex;align-items:center;gap:8px;}
+.tblock-dot{width:5px;height:5px;border-radius:50%;background:var(--rule);}
+.tblock-dot.now{background:var(--green);}
+.tblock-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--ink);line-height:1.1;margin-bottom:6px;}
+.tblock-item{font-size:11px;font-weight:300;color:var(--ink2);padding:6px 0;border-bottom:1px solid var(--rule2);display:flex;align-items:center;gap:8px;}
+.tblock-item:last-child{border-bottom:none;}
+.tid{width:3px;height:3px;border-radius:50%;background:var(--ink3);flex-shrink:0;}
+
+/* GAMES / BRAIN */
+.game-grid{display:grid;grid-template-columns:1fr 1fr;gap:0;border-top:1px solid var(--rule);}
+.game-tile{padding:28px 0;border-right:1px solid var(--rule);border-bottom:1px solid var(--rule);padding-right:24px;cursor:pointer;transition:background .2s;text-decoration:none;display:flex;flex-direction:column;gap:6px;}
+.game-tile:nth-child(2n){border-right:none;padding-right:0;padding-left:24px;}
+.game-tile:nth-last-child(-n+2){border-bottom:none;}
+.game-tile:hover{background:rgba(26,25,22,.03);}
+.game-cat{font-size:8px;letter-spacing:.22em;text-transform:uppercase;color:var(--ink3);}
+.game-title{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:300;color:var(--ink);}
+.game-desc{font-size:11px;font-weight:300;color:var(--ink3);line-height:1.6;}
+.game-arr{font-size:13px;color:var(--ink3);margin-top:6px;transition:transform .2s;}
+.game-tile:hover .game-arr{transform:translateX(4px);}
+
+/* QUIZ */
+.quiz-box{border-top:1px solid var(--rule);padding-top:24px;}
+.quiz-q{font-family:'Cormorant Garamond',serif;font-size:22px;font-weight:400;line-height:1.3;color:var(--ink);margin-bottom:20px;}
+.quiz-opts{display:flex;flex-direction:column;gap:0;}
+.quiz-opt{font-size:11px;font-weight:300;padding:13px 0;border-bottom:1px solid var(--rule2);cursor:pointer;display:flex;align-items:center;gap:12px;transition:color .2s;}
+.quiz-opt:hover{color:var(--ink);}
+.quiz-opt-dot{width:5px;height:5px;border-radius:50%;border:1px solid var(--ink3);flex-shrink:0;transition:background .2s;}
+.quiz-opt:hover .quiz-opt-dot{background:var(--ink);border-color:var(--ink);}
+.quiz-opt.selected .quiz-opt-dot{background:var(--green);border-color:var(--green);}
+.quiz-opt.selected{color:var(--green);}
+.quiz-opt.wrong .quiz-opt-dot{background:var(--red);border-color:var(--red);}
+.quiz-opt.wrong{color:var(--red);}
+.quiz-feedback{font-size:10px;font-weight:300;letter-spacing:.1em;color:var(--ink3);margin-top:16px;padding-top:12px;border-top:1px solid var(--rule);display:none;}
+.quiz-feedback.on{display:block;}
+.quiz-next{margin-top:14px;}
+
+/* AI UPDATES */
+.ai-item{display:flex;align-items:flex-start;gap:16px;padding:18px 0;border-bottom:1px solid var(--rule2);cursor:pointer;transition:background .15s;}
+.ai-item:hover{background:rgba(26,25,22,.02);}
+.ai-num{font-family:'DM Mono',monospace;font-size:9px;color:var(--ink3);min-width:20px;margin-top:3px;}
+.ai-body{flex:1;}
+.ai-src{font-family:'DM Mono',monospace;font-size:8px;letter-spacing:.14em;text-transform:uppercase;color:var(--ink3);margin-bottom:5px;}
+.ai-hed{font-family:'Cormorant Garamond',serif;font-size:18px;font-weight:400;line-height:1.3;color:var(--ink);}
+.ai-deck{font-size:11px;font-weight:300;color:var(--ink2);margin-top:4px;line-height:1.6;}
+
+/* BRAIN GAME PLACEHOLDER */
+.brain-placeholder{border:1px dashed var(--rule);padding:52px;text-align:center;margin-top:0;}
+.brain-ph-title{font-family:'Cormorant Garamond',serif;font-size:28px;font-style:italic;font-weight:300;color:var(--ink3);margin-bottom:10px;}
+.brain-ph-sub{font-size:9px;font-weight:300;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);}
+
+/* SPIN */
+.spin{width:9px;height:9px;border:1px solid var(--rule);border-top-color:var(--ink);border-radius:50%;animation:sp .8s linear infinite;display:inline-block;}
+@keyframes sp{to{transform:rotate(360deg);}}
+
+/* FOOTER */
+footer{max-width:var(--max);margin:80px auto 0;padding:48px 56px;border-top:1px solid var(--rule);display:flex;justify-content:space-between;align-items:center;}
+.fl{font-family:'Cormorant Garamond',serif;font-size:13px;font-style:italic;color:var(--ink3);}
+.fr{font-family:'DM Mono',monospace;font-size:8px;color:var(--ink3);letter-spacing:.06em;}
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="nav-inner">
+    <a class="nav-brand" href="#">Command</a>
+    <div class="nav-links">
+      <a class="nav-link" href="#s1">Today</a>
+      <a class="nav-link" href="#s2">Activity</a>
+      <a class="nav-link" href="#s3">Nutrition</a>
+      <a class="nav-link" href="#s4">Calendar</a>
+      <a class="nav-link" href="#s5">Mail</a>
+      <a class="nav-link" href="#s6">News</a>
+      <a class="nav-link" href="#s7">Weather</a>
+      <a class="nav-link" href="#s8">Sport</a>
+      <a class="nav-link" href="#s9">AI</a><a class="nav-link" href="#s8r">Racing</a>
+      <a class="nav-link" href="#s10">Games</a>
+      <a class="nav-link" href="#s11">Quiz</a>
+      <a class="nav-link" href="#s12">Brain</a>
+      <a class="nav-link" href="#s13">Books</a>
+      <a class="nav-link" href="#s14">Florence</a>
+      <a class="nav-link" href="#s15">Music</a>
+      <a class="nav-link" href="#s16">Trailers</a>
+      <a class="nav-link" href="#s17">Wine</a>
+      <a class="nav-link" href="#s18">Garden</a>
+      <a class="nav-link" href="#s19">Ag &amp; Wine</a>
+    </div>
+    <div class="nav-right">
+      <div id="nt">—</div>
+      <div id="nd">—</div>
+    </div>
+  </div>
+</nav>
+
+<main class="page">
+
+  <!-- HERO -->
+  <section class="hero">
+    <div class="hero-greet" id="hg">Good morning, Brian</div>
+    <h1 class="hero-title">Daily<br><em>Command.</em></h1>
+    <p class="hero-sub" id="hd">Monday, 20 April 2026 · Adelaide, South Australia</p>
+  </section>
+
+  <!-- 01 TODAY -->
+  <div class="section" id="s1">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">01</span><span class="sh-title">Today</span></div>
+      <div class="sh-r"><span class="sh-sub">Daily Log · XP · Routine</span><span class="sh-hint">Hover to open</span><span class="sh-badge g" id="tod-badge">—</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two" style="margin-bottom:32px;">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;">Brian's Daily Log — live</p>
+          <div class="tod-stats">
+            <div class="tod-s"><div class="tod-sn" id="xp-n">0</div><div class="tod-sl">XP Today</div></div>
+            <div class="tod-s"><div class="tod-sn" id="str-n">0</div><div class="tod-sl">Day Streak</div></div>
+            <div class="tod-s"><div class="tod-sn" id="comp-n">0%</div><div class="tod-sl">Complete</div></div>
+            <div class="tod-s"><div class="tod-sn" id="lvl-n" style="font-size:18px;font-style:italic;">Starter</div><div class="tod-sl">Level</div></div>
+          </div>
+          <div class="prog" style="margin-bottom:20px;">
+            <div class="prog-top"><span class="prog-l">XP progress</span><span class="prog-l" id="xp-lbl">0 / 150</span></div>
+            <div class="prog-track"><div class="prog-fill" id="xp-bar" style="width:0%"></div></div>
+          </div>
+          <a class="al" href="https://wibberley18.github.io/Dashboard/" target="_blank">Open Daily Log full screen</a>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.2em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;border-bottom:1px solid var(--rule);padding-bottom:10px;">Time of day</p>
+          <div class="tod-grid" style="margin-bottom:0;">
+            <div class="tblock" onclick="window.open('https://wibberley18.github.io/Dashboard/','_blank')">
+              <div class="tblock-time"><div class="tblock-dot" id="dot-m"></div>Morning</div>
+              <div class="tblock-title">Morning Ritual</div>
+              <div class="tblock-item"><div class="tid"></div>Breathwork · ERP</div>
+              <div class="tblock-item"><div class="tid"></div>Journal prompt</div>
+              <div class="tblock-item"><div class="tid"></div>Training session</div>
+            </div>
+            <div class="tblock" onclick="window.open('https://wibberley18.github.io/Dashboard/','_blank')">
+              <div class="tblock-time"><div class="tblock-dot" id="dot-a"></div>Afternoon</div>
+              <div class="tblock-title">Work & Focus</div>
+              <div class="tblock-item"><div class="tid"></div>Billable hours</div>
+              <div class="tblock-item"><div class="tid"></div>Client work</div>
+              <div class="tblock-item"><div class="tid"></div>Learning block</div>
+            </div>
+            <div class="tblock" onclick="window.open('https://wibberley18.github.io/Dashboard/','_blank')">
+              <div class="tblock-time"><div class="tblock-dot" id="dot-e"></div>After Work</div>
+              <div class="tblock-title">Evening Wind-down</div>
+              <div class="tblock-item"><div class="tid"></div>Drive home</div>
+              <div class="tblock-item"><div class="tid"></div>Time with Florence</div>
+              <div class="tblock-item"><div class="tid"></div>Dinner · Noom log</div>
+            </div>
+            <div class="tblock" onclick="window.open('https://wibberley18.github.io/Dashboard/','_blank')">
+              <div class="tblock-time"><div class="tblock-dot" id="dot-n"></div>Night</div>
+              <div class="tblock-title">Night Routine</div>
+              <div class="tblock-item"><div class="tid"></div>Reading</div>
+              <div class="tblock-item"><div class="tid"></div>Meditation</div>
+              <div class="tblock-item"><div class="tid"></div>Sleep prep</div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="embed-hdr">
+        <div class="embed-title"><div class="embed-live"></div>Brian's Daily Log — embedded live</div>
+        <a class="embed-open" href="https://wibberley18.github.io/Dashboard/" target="_blank">Open full screen →</a>
+      </div>
+      <iframe class="dash" src="https://wibberley18.github.io/Dashboard/" title="Brian's Daily Log" allow="camera;microphone;geolocation"></iframe>
+    </div>
+  </div>
+
+  <!-- 02 ACTIVITY -->
+  <div class="section" id="s2">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">02</span><span class="sh-title">Activity</span></div>
+      <div class="sh-r"><span class="sh-sub">Garmin · Strava · iPhone</span><span class="sh-hint">Hover to open</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <div class="rings-wrap">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <circle cx="50" cy="50" r="42" fill="none" stroke="rgba(26,25,22,.07)" stroke-width="6"/>
+              <circle cx="50" cy="50" r="42" fill="none" stroke="var(--ink)" stroke-width="6" stroke-linecap="round" id="rm" stroke-dasharray="263.9" stroke-dashoffset="263.9"/>
+              <circle cx="50" cy="50" r="31" fill="none" stroke="rgba(26,25,22,.07)" stroke-width="6"/>
+              <circle cx="50" cy="50" r="31" fill="none" stroke="#6a6a6a" stroke-width="6" stroke-linecap="round" id="re" stroke-dasharray="194.8" stroke-dashoffset="194.8"/>
+              <circle cx="50" cy="50" r="20" fill="none" stroke="rgba(26,25,22,.07)" stroke-width="6"/>
+              <circle cx="50" cy="50" r="20" fill="none" stroke="#aaa" stroke-width="6" stroke-linecap="round" id="rs" stroke-dasharray="125.7" stroke-dashoffset="125.7"/>
+            </svg>
+            <div class="rleg">
+              <div class="rrow"><div class="rdot" style="background:var(--ink)"></div><span class="rlbl">Move</span><span class="rval" id="rlm">—</span><span class="runit">kcal</span></div>
+              <div class="rrow"><div class="rdot" style="background:#6a6a6a"></div><span class="rlbl">Exercise</span><span class="rval" id="rle">—</span><span class="runit">min</span></div>
+              <div class="rrow"><div class="rdot" style="background:#aaa"></div><span class="rlbl">Stand</span><span class="rval" id="rls">—</span><span class="runit">hrs</span></div>
+              <div class="rrow"><div class="rdot" style="background:#ccc"></div><span class="rlbl">Steps</span><span class="rval" id="rlst">—</span><span class="runit">k</span></div>
+            </div>
+          </div>
+        </div>
+        <div class="three" style="align-content:start;">
+          <div class="dc"><div><span class="dcv" id="hsl">—</span><span class="dcu">h</span></div><div class="dcl">Sleep</div><div class="dcb"><div class="dcbf" id="hslb" style="width:0%"></div></div></div>
+          <div class="dc"><div><span class="dcv" id="hhr">—</span><span class="dcu">ms</span></div><div class="dcl">HRV</div><div class="dcb"><div class="dcbf" id="hhrb" style="width:0%"></div></div></div>
+          <div class="dc"><div><span class="dcv" id="hrhr">—</span><span class="dcu">bpm</span></div><div class="dcl">Resting HR</div><div class="dcb"><div class="dcbf" id="hrhrb" style="width:0%"></div></div></div>
+          <div class="dc"><div><span class="dcv" id="hrn">—</span><span class="dcu">km</span></div><div class="dcl">Last run</div><div class="dcb"><div class="dcbf" id="hrnb" style="width:0%"></div></div></div>
+          <div class="dc"><div><span class="dcv" id="hpc">—</span><span class="dcu">'/km</span></div><div class="dcl">Pace</div><div class="dcb"><div class="dcbf" id="hpcb" style="width:0%"></div></div></div>
+          <div class="dc"><div><span class="dcv" id="hwt">—</span><span class="dcu">kg</span></div><div class="dcl">Weight</div><div class="dcb"><div class="dcbf" id="hwtb" style="width:0%"></div></div></div>
+        </div>
+      </div>
+      <div class="fc" id="hform">
+        <div class="fgrid">
+          <div class="ff"><label>Move kcal</label><input id="fm" type="number" placeholder="450"/></div>
+          <div class="ff"><label>Exercise min</label><input id="fe" type="number" placeholder="45"/></div>
+          <div class="ff"><label>Stand hrs</label><input id="fst" type="number" placeholder="10"/></div>
+          <div class="ff"><label>Steps k</label><input id="fsteps" type="number" placeholder="8.5" step=".1"/></div>
+          <div class="ff"><label>Sleep hrs</label><input id="fsl" type="number" placeholder="7.5" step=".25"/></div>
+          <div class="ff"><label>HRV ms</label><input id="fhr" type="number" placeholder="55"/></div>
+          <div class="ff"><label>Resting HR</label><input id="frhr" type="number" placeholder="58"/></div>
+          <div class="ff"><label>Run km</label><input id="frn" type="number" placeholder="5" step=".1"/></div>
+          <div class="ff"><label>Pace min/km</label><input id="fpc" type="number" placeholder="5.8" step=".1"/></div>
+        </div>
+        <div class="fa">
+          <button class="gbtn" style="border:1px solid var(--rule)" onclick="saveHD()">Save</button>
+          <button class="gbtn" style="border:1px solid var(--rule)" onclick="toggleHF()">Cancel</button>
+        </div>
+      </div>
+      <button class="al" onclick="toggleHF()">Log today's metrics</button>
+      <a class="al" href="https://connect.garmin.com" target="_blank">Open Garmin Connect</a>
+      <a class="al" href="https://www.strava.com/dashboard" target="_blank">Open Strava</a>
+    </div>
+  </div>
+
+  <!-- 03 NUTRITION -->
+  <div class="section" id="s3">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">03</span><span class="sh-title">Nutrition</span></div>
+      <div class="sh-r"><span class="sh-sub">Noom · Daily log</span><span class="sh-hint">Hover to open</span><span class="sh-badge a" id="npill">Log today</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="nstrip">
+        <div class="nc"><div class="ncv" id="ncal">—</div><div class="ncl">Calories</div><div class="ncb"><div class="ncbf" id="ncalb" style="background:var(--ink);width:0%"></div></div></div>
+        <div class="nc"><div class="ncv" id="ngr">—</div><div class="ncl">Green foods</div><div class="ncb"><div class="ncbf" id="ngrb" style="background:var(--green);width:0%"></div></div></div>
+        <div class="nc"><div class="ncv" id="nye">—</div><div class="ncl">Yellow foods</div><div class="ncb"><div class="ncbf" id="nyeb" style="background:var(--gold);width:0%"></div></div></div>
+        <div class="nc"><div class="ncv" id="nrd">—</div><div class="ncl">Red foods</div><div class="ncb"><div class="ncbf" id="nrdb" style="background:var(--red);width:0%"></div></div></div>
+      </div>
+      <div class="nstrip" style="border-top:none;margin-bottom:24px;">
+        <div class="nc"><div class="ncv" id="nwt">—</div><div class="ncl">Water cups</div><div class="ncb"><div class="ncbf" id="nwtb" style="background:var(--ink2);width:0%"></div></div></div>
+        <div class="nc"><div class="ncv" id="nmd">—</div><div class="ncl">Mood /10</div><div class="ncb"><div class="ncbf" id="nmdb" style="background:var(--ink3);width:0%"></div></div></div>
+        <div class="nc"><div class="ncv" id="nwg">—</div><div class="ncl">Weight kg</div><div class="ncb"><div class="ncbf" style="background:var(--ink3);width:55%"></div></div></div>
+        <div class="nc"><div class="ncv" id="nex">—</div><div class="ncl">Exercise min</div><div class="ncb"><div class="ncbf" id="nexb" style="background:var(--ink);width:0%"></div></div></div>
+      </div>
+      <div class="fc" id="nform">
+        <div class="fgrid">
+          <div class="ff"><label>Calories</label><input id="nfc" type="number" placeholder="1800"/></div>
+          <div class="ff"><label>Green foods</label><input id="nfg" type="number" placeholder="5"/></div>
+          <div class="ff"><label>Yellow foods</label><input id="nfy" type="number" placeholder="3"/></div>
+          <div class="ff"><label>Red foods</label><input id="nfr" type="number" placeholder="1"/></div>
+          <div class="ff"><label>Water cups</label><input id="nfw" type="number" placeholder="8"/></div>
+          <div class="ff"><label>Mood (1–10)</label><input id="nfm" type="number" placeholder="7" min="1" max="10"/></div>
+          <div class="ff"><label>Weight kg</label><input id="nfwg" type="number" placeholder="82.5" step=".1"/></div>
+          <div class="ff"><label>Exercise min</label><input id="nfe" type="number" placeholder="45"/></div>
+        </div>
+        <div class="fa">
+          <button class="gbtn" style="border:1px solid var(--rule)" onclick="saveN()">Save</button>
+          <button class="gbtn" style="border:1px solid var(--rule)" onclick="toggleNF()">Cancel</button>
+        </div>
+      </div>
+      <button class="al" onclick="toggleNF()">Log today's food & metrics</button>
+      <a class="al" href="https://www.noom.com" target="_blank">Open Noom</a>
+    </div>
+  </div>
+
+  <!-- 04 CALENDAR / EVENTS -->
+  <div class="section" id="s4">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">04</span><span class="sh-title">Calendar</span></div>
+      <div class="sh-r"><span class="sh-sub">Events · April 2026</span><span class="sh-hint">Hover to open</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two" style="margin-bottom:32px;">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;border-bottom:1px solid var(--rule);padding-bottom:10px;">April — May 2026</p>
+          <div class="cal-grid" id="cal-grid">
+            <div class="cal-day-hdr">Mon</div><div class="cal-day-hdr">Tue</div><div class="cal-day-hdr">Wed</div><div class="cal-day-hdr">Thu</div><div class="cal-day-hdr">Fri</div><div class="cal-day-hdr">Sat</div><div class="cal-day-hdr">Sun</div>
+          </div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;border-bottom:1px solid var(--rule);padding-bottom:10px;">Upcoming events</p>
+          <div class="event-list">
+            <div class="event-item"><span class="event-date">20 Apr</span><div class="event-dot" style="background:var(--green)"></div><span class="event-title">Today</span><span class="event-badge">Now</span></div>
+            <div class="event-item"><span class="event-date">24 Apr</span><div class="event-dot" style="background:var(--gold)"></div><span class="event-title">Gather Round AFL (Port Lincoln)</span><span class="event-badge">Sport</span></div>
+            <div class="event-item"><span class="event-date">25 Apr</span><div class="event-dot" style="background:var(--ink3)"></div><span class="event-title">ANZAC Day</span><span class="event-badge">Public Holiday</span></div>
+            <div class="event-item"><span class="event-date">1 May</span><div class="event-dot" style="background:var(--gold)"></div><span class="event-title">Showdown 59 — Adelaide Oval</span><span class="event-badge">AFL</span></div>
+            <div class="event-item"><span class="event-date">May</span><div class="event-dot" style="background:var(--ink)"></div><span class="event-title">True Grit 10km</span><span class="event-badge">Running</span></div>
+            <div class="event-item"><span class="event-date">Jun</span><div class="event-dot" style="background:var(--ink)"></div><span class="event-title">Adelaide Half Marathon</span><span class="event-badge">Running</span></div>
+            <div class="event-item"><span class="event-date">Jun</span><div class="event-dot" style="background:var(--ink)"></div><span class="event-title">South Bremer Trails 15km</span><span class="event-badge">Running</span></div>
+            <div class="event-item"><span class="event-date">Jul</span><div class="event-dot" style="background:var(--ink)"></div><span class="event-title">Florence's Christening</span><span class="event-badge">Family</span></div>
+            <div class="event-item"><span class="event-date">Aug</span><div class="event-dot" style="background:var(--ink)"></div><span class="event-title">Lofty Revenge 10km</span><span class="event-badge">Running</span></div>
+          </div>
+        </div>
+      </div>
+      <a class="al" href="https://calendar.google.com" target="_blank">Open Google Calendar</a>
+    </div>
+  </div>
+
+  <!-- 05 MAIL -->
+  <div class="section" id="s5">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">05</span><span class="sh-title">Mail</span></div>
+      <div class="sh-r"><span class="sh-sub">Gmail · Outlook</span><span class="sh-hint">Hover to open</span><span class="sh-badge m">Live</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <div class="email-sect-lbl"><img src="https://ssl.gstatic.com/ui/v1/icons/mail/rfr/gmail.ico" onerror="this.style.display='none'"/>Gmail — today</div>
+          <!-- URGENT -->
+          <div class="email-sect-lbl" style="margin-top:10px;color:var(--red);border-color:transparent;">🔴 Urgent / Action</div>
+          <div class="erow">
+            <div class="edot u"></div>
+            <div class="ei">
+              <div class="esender">Google Security</div>
+              <div class="esubj">Security alert — Health Dashboard accessed your account</div>
+            </div>
+            <span class="etime">5:02am</span>
+            <span class="cat-badge" style="border-color:var(--red);color:var(--red);">Action</span>
+          </div>
+          <!-- NEWSLETTERS -->
+          <div class="email-sect-lbl" style="margin-top:10px;color:var(--ink3);border-color:transparent;">📰 Newsletters</div>
+          <div class="erow">
+            <div class="edot u"></div>
+            <div class="ei">
+              <div class="esender">Selfdom</div>
+              <div class="esubj">Small Intentional Changes Truly Change Your Life</div>
+            </div>
+            <span class="etime">5:36am</span>
+          </div>
+          <div class="erow">
+            <div class="edot u"></div>
+            <div class="ei">
+              <div class="esender">VitalPlus</div>
+              <div class="esubj">Why Cristiano Ronaldo goes cold 🧊</div>
+            </div>
+            <span class="etime">4:30am</span>
+          </div>
+          <div class="erow">
+            <div class="edot u"></div>
+            <div class="ei">
+              <div class="esender">Great Southern Runs</div>
+              <div class="esubj">Myponga Loop — Exclusive Discount Offer</div>
+            </div>
+            <span class="etime">2:42am</span>
+          </div>
+          <div class="erow">
+            <div class="edot u"></div>
+            <div class="ei">
+              <div class="esender">Notion</div>
+              <div class="esubj">A helpful teammate, built into Notion</div>
+            </div>
+            <span class="etime">2:20am</span>
+          </div>
+          <!-- OTHER -->
+          <div class="email-sect-lbl" style="margin-top:10px;color:var(--ink3);border-color:transparent;">📦 Promotions</div>
+          <div class="erow">
+            <div class="edot r"></div>
+            <div class="ei">
+              <div class="esender">Qantas Frequent Flyer</div>
+              <div class="esubj">Spoil Mum this Mother's Day and earn Qantas Points</div>
+            </div>
+            <span class="etime">6:12am</span>
+          </div>
+          <div class="erow">
+            <div class="edot r"></div>
+            <div class="ei">
+              <div class="esender">Tales</div>
+              <div class="esubj">Mother's Day shipping cut-off</div>
+            </div>
+            <span class="etime">6:00am</span>
+          </div>
+          <div class="erow">
+            <div class="edot r"></div>
+            <div class="ei">
+              <div class="esender">True Protein</div>
+              <div class="esubj">Spend $175 & Get Free Socks 🧦</div>
+            </div>
+            <span class="etime">5:05am</span>
+          </div>
+          <div class="erow">
+            <div class="edot r"></div>
+            <div class="ei">
+              <div class="esender">Different Drop</div>
+              <div class="esubj">NEW 97pt Paralian Shiraz — exceptional value</div>
+            </div>
+            <span class="etime">3:51am</span>
+          </div>
+          <div class="erow">
+            <div class="edot r"></div>
+            <div class="ei">
+              <div class="esender">Dan Murphy's</div>
+              <div class="esubj">A twist on taste: zero%* drinks you'll love</div>
+            </div>
+            <span class="etime">2:19am</span>
+          </div>
+          <a class="al" href="https://mail.google.com" target="_blank">Open Gmail</a>
+        </div>
+        <div>
+          <div class="email-sect-lbl"><img src="https://outlook.office.com/favicon.ico" onerror="this.style.display='none'"/>Outlook — via Glean</div>
+          <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:15px;color:var(--ink3);padding:16px 0;">Connect Glean connector in Claude.ai to load Outlook emails.</p>
+          <a class="al" href="https://outlook.office.com" target="_blank">Open Outlook</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 06 NEWS -->
+  <div class="section" id="s6">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">06</span><span class="sh-title">News &amp; Reading</span></div>
+      <div class="sh-r"><span class="sh-sub">7 sources · Live</span><span class="sh-hint">Hover to open</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:22px;">
+        <div style="padding:16px 20px 16px 0;border-right:1px solid var(--rule);">
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;">Feedly — newspapers and news sites</p>
+          <div style="font-size:11px;font-weight:300;color:var(--ink2);line-height:1.7;">Subscribe to Al Jazeera, Sky News, 7 News, Port Lincoln Times, The Australian and Stock Journal as RSS feeds in Feedly. One place for all news sources.</div>
+          <a class="al" href="https://feedly.com" target="_blank">Open Feedly</a>
+        </div>
+        <div style="padding:16px 0 16px 20px;">
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;">Readwise Reader — Substack and long reads</p>
+          <div style="font-size:11px;font-weight:300;color:var(--ink2);line-height:1.7;">Pitchfork, Decanter, Madigan Media, The Reading List and all Substack newsletters in one place. Highlights resurface daily for better retention.</div>
+          <a class="al" href="https://readwise.io/reader" target="_blank">Open Readwise Reader</a>
+        </div>
+      </div>
+      <div class="ticker" style="margin-bottom:24px;">
+        <div class="ticker-in">
+          <span class="ti">Al Jazeera</span><span class="ti">Sky News</span><span class="ti">7 News Adelaide</span><span class="ti">Port Lincoln Times</span><span class="ti">The Australian</span><span class="ti">New York Times</span><span class="ti">Good Reads</span>
+          <span class="ti">Al Jazeera</span><span class="ti">Sky News</span><span class="ti">7 News Adelaide</span><span class="ti">Port Lincoln Times</span><span class="ti">The Australian</span><span class="ti">New York Times</span><span class="ti">Good Reads</span>
+        </div>
+      </div>
+      <div class="stabs" id="stabs">
+        <div class="stab active" onclick="showSrc('alj',this)"><img src="https://www.aljazeera.com/favicon.ico" onerror="this.style.display='none'"/>Al Jazeera</div>
+        <div class="stab" onclick="showSrc('sky',this)"><img src="https://news.sky.com/favicon.ico" onerror="this.style.display='none'"/>Sky News</div>
+        <div class="stab" onclick="showSrc('7n',this)"><img src="https://7news.com.au/favicon.ico" onerror="this.style.display='none'"/>7 News Adelaide</div>
+        <div class="stab" onclick="showSrc('plt',this)">Port Lincoln Times</div>
+        <div class="stab" onclick="showSrc('aus',this)"><img src="https://www.theaustralian.com.au/favicon.ico" onerror="this.style.display='none'"/>The Australian</div>
+        <div class="stab" onclick="showSrc('reads',this)"><img src="https://www.goodreads.com/favicon.ico" onerror="this.style.display='none'"/>Good Reads</div>
+      </div>
+      <div id="feed-alj">
+        <div class="hcard" onclick="window.open('https://www.aljazeera.com/news/2026/4/16/hopes-grow-for-a-breakthrough-in-us-iran-talks-as-pakistan-mediates','_blank')">
+          <img class="himg" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/ca/Flag_of_Iran.svg/1280px-Flag_of_Iran.svg.png" style="object-position:center 30%;background:#c8c4bc;" onerror="this.style.background='#c8c4bc'"/>
+          <div class="hov"></div>
+          <div class="hcap"><div class="hcsrc">Al Jazeera · Middle East · 20 Apr 2026</div><div class="hched">Pakistan brokers hope for US–Iran nuclear breakthrough as delegation lands in Tehran</div><div class="hctag">Developing</div></div>
+        </div>
+        <div class="twoup">
+          <div class="tuc" onclick="window.open('https://www.aljazeera.com/news/2026/4/16/trump-says-israel-and-lebanons-leaders-will-speak-on-thursday','_blank')">
+            <div class="tuiw"><img class="tui" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/59/Empty_road_at_dusk_in_Beirut.jpg/1280px-Empty_road_at_dusk_in_Beirut.jpg" onerror="this.style.background='#c0bcb4'"/></div>
+            <div class="tub"><div class="tusrc">Al Jazeera · Lebanon</div><div class="tuhed">Israel and Lebanon to speak for first time in 34 years</div><div class="tudeck">Trump announces direct call between Jerusalem and Beirut — described as a diplomatic taboo.</div></div>
+          </div>
+          <div class="tuc" onclick="window.open('https://www.aljazeera.com/middle-east/','_blank')">
+            <div class="tuiw"><img class="tui" src="https://upload.wikimedia.org/wikipedia/commons/thumb/5/5b/Hormuz_strait.jpg/1280px-Hormuz_strait.jpg" onerror="this.style.background='#b8b4aa'"/></div>
+            <div class="tub"><div class="tusrc">Al Jazeera · Economy</div><div class="tuhed">Hormuz blockade: US clarifies it's ports, not the Strait</div><div class="tudeck">Iran threatens to halt regional trade as shipping companies flag mines and unclear conditions.</div></div>
+          </div>
+        </div>
+        <a class="al" href="https://www.aljazeera.com" target="_blank">Open Al Jazeera</a>
+      </div>
+      <div id="feed-sky" style="display:none;"><div class="hcard" onclick="window.open('https://news.sky.com','_blank')"><img class="himg" src="https://upload.wikimedia.org/wikipedia/commons/thumb/a/a9/Flag_of_the_United_Kingdom.svg/1280px-Flag_of_the_United_Kingdom.svg.png" style="object-fit:contain;background:#c8c4bc;padding:80px;" onerror="this.style.background='#c8c4bc'"/><div class="hov"></div><div class="hcap"><div class="hcsrc">Sky News · UK · Today</div><div class="hched">Will UK Prime Minister Keir Starmer resign? Political pressure builds in Westminster</div><div class="hctag">Politics</div></div></div><a class="al" href="https://news.sky.com" target="_blank">Open Sky News</a></div>
+      <div id="feed-7n" style="display:none;"><div class="hcard" onclick="window.open('https://7news.com.au/news/sa','_blank')"><img class="himg" src="https://upload.wikimedia.org/wikipedia/commons/thumb/c/c8/Gawler_Ranges_Evening_Cloudscape.jpg/1280px-Gawler_Ranges_Evening_Cloudscape.jpg" onerror="this.style.background='#c8c4bc'"/><div class="hov"></div><div class="hcap"><div class="hcsrc">7 News Adelaide · SA · Tonight</div><div class="hched">Southern Lights expected to illuminate Adelaide skies tonight — look south before midnight</div><div class="hctag">SA Weather</div></div></div><a class="al" href="https://7news.com.au/news/sa" target="_blank">Open 7 News Adelaide</a></div>
+      <div id="feed-plt" style="display:none;"><p class="nstub">Port Lincoln Times — Eyre Peninsula news</p><a class="al" href="https://www.portlincolntimes.com.au" target="_blank">Open Port Lincoln Times</a></div>
+      <div id="feed-aus" style="display:none;"><p class="nstub">The Australian — national briefing</p><a class="al" href="https://www.theaustralian.com.au" target="_blank">Open The Australian</a></div>
+      <div id="feed-reads" style="display:none;"><p class="nstub">Good Reads — book picks</p><a class="al" href="https://www.goodreads.com" target="_blank">Open Goodreads</a></div>
+    </div>
+  </div>
+
+  <!-- 07 WEATHER -->
+  <div class="section" id="s7">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">07</span><span class="sh-title">Weather</span></div>
+      <div class="sh-r"><span class="sh-sub">Adelaide, South Australia</span><span class="sh-hint">Hover to open</span><span class="sh-badge m" id="wpill">Loading</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <div class="wx-t" id="wt">—°</div>
+          <div class="wx-c" id="wc">—</div>
+          <div class="wx-f" id="wf">Fetching…</div>
+          <div class="wx-sr">
+            <div class="wx-s"><div class="wx-sv" id="whi">—</div><div class="wx-sl">High</div></div>
+            <div class="wx-s"><div class="wx-sv" id="wlo">—</div><div class="wx-sl">Low</div></div>
+            <div class="wx-s"><div class="wx-sv" id="wr">—</div><div class="wx-sl">Rain</div></div>
+            <div class="wx-s"><div class="wx-sv" id="wh">—</div><div class="wx-sl">Humidity</div></div>
+            <div class="wx-s"><div class="wx-sv" id="ww">—</div><div class="wx-sl">Wind</div></div>
+          </div>
+        </div>
+        <div style="display:flex;align-items:flex-end;">
+          <p style="font-family:'Cormorant Garamond',serif;font-size:15px;font-style:italic;color:var(--ink3);line-height:1.8;">"Dress in layers.<br>Adelaide changes its mind."</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 08 SPORT -->
+  <div class="section" id="s8">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">08</span><span class="sh-title">Sport</span></div>
+      <div class="sh-r"><span class="sh-sub">10 codes · Live</span><span class="sh-hint">Hover to open</span><span class="sh-badge m" id="sportpill">AFL</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="sgrid" id="sgrid">
+        <div class="stile active" onclick="setSport('afl',this)"><img class="stico" src="https://www.afl.com.au/favicon.ico" onerror="this.style.display='none'"/><div class="stn">AFL</div><div class="sts">Aus Rules</div></div>
+        <div class="stile" onclick="setSport('sarugby',this)"><img class="stico" src="https://www.sarugby.com.au/favicon.ico" onerror="this.style.display='none'"/><div class="stn">SA Rugby</div><div class="sts">Union</div></div>
+        <div class="stile" onclick="setSport('cricket',this)"><img class="stico" src="https://www.cricket.com.au/favicon.ico" onerror="this.style.display='none'"/><div class="stn">Cricket</div><div class="sts">AU + International</div></div>
+        <div class="stile" onclick="setSport('tennis',this)"><img class="stico" src="https://www.atptour.com/favicon.ico" onerror="this.style.display='none'"/><div class="stn">Tennis</div><div class="sts">ATP · WTA</div></div>
+        <div class="stile" onclick="setSport('nfl',this)"><img class="stico" src="https://www.nfl.com/favicon.ico" onerror="this.style.display='none'"/><div class="stn">NFL</div><div class="sts">American Football</div></div>
+        <div class="stile" onclick="setSport('nba',this)"><img class="stico" src="https://www.nba.com/favicon.ico" onerror="this.style.display='none'"/><div class="stn">NBA</div><div class="sts">Basketball</div></div>
+        <div class="stile" onclick="setSport('superrugby',this)"><img class="stico" src="https://www.superrugby.com.au/favicon.ico" onerror="this.style.display='none'"/><div class="stn">Super Rugby</div><div class="sts">Pacific</div></div>
+        <div class="stile" onclick="setSport('nrl',this)"><img class="stico" src="https://www.nrl.com/favicon.ico" onerror="this.style.display='none'"/><div class="stn">NRL</div><div class="sts">Rugby League</div></div>
+        <div class="stile" onclick="setSport('soccer',this)"><img class="stico" src="https://www.a-leagues.com.au/favicon.ico" onerror="this.style.display='none'"/><div class="stn">Soccer</div><div class="sts">A-League · EPL</div></div>
+        <div class="stile" onclick="setSport('surfing',this)"><img class="stico" src="https://www.worldsurfleague.com/favicon.ico" onerror="this.style.display='none'"/><div class="stn">Surfing</div><div class="sts">WSL</div></div>
+      </div>
+      <p class="nstub" id="sbody">Select a sport above to see links.</p>
+      <div id="sacts"></div>
+    </div>
+  </div>
+
+  <!-- 08r HORSE RACING -->
+  <div class="section" id="s8r">
+    <div class="sh"><div class="sh-l"><span class="sh-num">08+</span><span class="sh-title">Horse Racing</span></div><div class="sh-r"><span class="sh-sub">Racing.com · AU thoroughbreds</span><span class="sh-hint">Hover to open</span><span class="sh-badge g">Live from inbox</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Racing.com — from your inbox this month</p>
+          <div class="ai-item" onclick="window.open('https://www.racing.com','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Racing.com · 21 Apr 2026</div><div class="ai-hed">Tentyris and Observer retired to stud — Darley bound for 2026</div><div class="ai-deck">J-Mac gate trouble, Freedman Sangster trio, Weekend Hussler upset. Plus Ascot updates, Japan rides and full weekend tips.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.racing.com','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Racing.com · 17 Apr 2026</div><div class="ai-hed">The horse no one saw coming is unstoppable</div><div class="ai-deck">Full weekend tips plus Ascot updates and Japan rides. Form analysis on Autumn carnival finalists heading into the final Group 1 weeks.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.racing.com','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Racing.com · 14 Apr 2026</div><div class="ai-hed">Sir Delius spring path revealed — Waller owns Autumn Glow call</div><div class="ai-deck">Comeback hopes, Chautauqua update and latest from Maher stables heading into the final Autumn carnival weeks.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.racing.com','_blank')"><div class="ai-num">04</div><div class="ai-body"><div class="ai-src">Racing.com · 7 Apr 2026</div><div class="ai-hed">Pride Of Jenni call made ahead of Randwick showdown</div><div class="ai-deck">Connections pivot plans as Queen Elizabeth bid is ruled out. Full Randwick preview and Group 1 contenders mapped.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.racing.com','_blank')"><div class="ai-num">05</div><div class="ai-body"><div class="ai-src">Racing.com · 31 Mar 2026</div><div class="ai-hed">Melbourne most brutal Group 1 finishes — Slipper shake-up and Cup pathways</div><div class="ai-deck">Zahra booking and Melbourne Cup pathways. Deep dive into the tightest Group 1 finishes in history plus Waller Slipper analysis.</div></div></div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Key AU racing sources</p>
+          <div class="ai-item" onclick="window.open('https://www.racing.com','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Racing.com · in your inbox</div><div class="ai-hed">Racing.com daily newsletter</div><div class="ai-deck">You are already subscribed. The go-to for Australian thoroughbred news, tips, form guides, Group 1 analysis and stud news. Covers Flemington, Randwick, Morphettville SA.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.tab.com.au/racing','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">TAB · AU wagering</div><div class="ai-hed">TAB form guide and futures markets</div><div class="ai-deck">Best for form guides, race fields, fluctuations and futures markets for major races. Strong Morphettville SA coverage.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.racenet.com.au','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Racenet · free form guide</div><div class="ai-hed">Racenet — best free form analysis</div><div class="ai-deck">Best free Australian racing form guide. Horse profiles, jockey and trainer stats, track conditions and speed maps. No paywall.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.sajc.com.au','_blank')"><div class="ai-num">04</div><div class="ai-body"><div class="ai-src">SAJC · Morphettville · SA</div><div class="ai-hed">South Australian Jockey Club</div><div class="ai-deck">Local SA racing. Morphettville race days, SA carnival fixtures and feature race calendar including the Adelaide Cup and SA Derby.</div></div></div>
+        </div>
+      </div>
+      <a class="al" href="https://www.racing.com" target="_blank">Racing.com</a>
+      <a class="al" href="https://www.tab.com.au/racing" target="_blank">TAB form guide</a>
+      <a class="al" href="https://www.racenet.com.au" target="_blank">Racenet</a>
+      <a class="al" href="https://www.sajc.com.au" target="_blank">SAJC Morphettville</a>
+    </div>
+  </div>
+
+  <!-- 09 AI NEWS -->
+  <div class="section" id="s9">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">09</span><span class="sh-title">AI & Tech</span></div>
+      <div class="sh-r"><span class="sh-sub">Claude · OpenAI · Google · Meta</span><span class="sh-hint">Hover to open</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="ai-item" onclick="window.open('https://www.anthropic.com/news','_blank')">
+        <div class="ai-num">01</div>
+        <div class="ai-body">
+          <div class="ai-src">Anthropic · Claude</div>
+          <div class="ai-hed">Claude Sonnet 4.6 — the model powering this dashboard</div>
+          <div class="ai-deck">The current Claude model in claude.ai. Part of the Claude 4.6 family alongside Opus 4.6. Optimised for everyday intelligent tasks with fast response and high accuracy.</div>
+        </div>
+      </div>
+      <div class="ai-item" onclick="window.open('https://openai.com/news','_blank')">
+        <div class="ai-num">02</div>
+        <div class="ai-body">
+          <div class="ai-src">OpenAI · GPT</div>
+          <div class="ai-hed">Latest OpenAI news and model updates</div>
+          <div class="ai-deck">OpenAI continues to develop GPT-5 and o-series reasoning models. Operator API and agent frameworks expanding rapidly through 2026.</div>
+        </div>
+      </div>
+      <div class="ai-item" onclick="window.open('https://deepmind.google','_blank')">
+        <div class="ai-num">03</div>
+        <div class="ai-body">
+          <div class="ai-src">Google DeepMind · Gemini</div>
+          <div class="ai-hed">Gemini Ultra 2 and Project Astra push multimodal AI forward</div>
+          <div class="ai-deck">Google's Gemini family continues to integrate deeply into Workspace, Search, and Android with real-time vision and long-context reasoning.</div>
+        </div>
+      </div>
+      <div class="ai-item" onclick="window.open('https://ai.meta.com','_blank')">
+        <div class="ai-num">04</div>
+        <div class="ai-body">
+          <div class="ai-src">Meta AI · Llama</div>
+          <div class="ai-hed">Llama 4 open-weights release expands accessible AI development</div>
+          <div class="ai-deck">Meta's open-source Llama models enable developers to run capable AI locally. Llama 4 Scout and Maverick variants cover mobile-to-server use cases.</div>
+        </div>
+      </div>
+      <div class="ai-item" onclick="window.open('https://huggingface.co/papers','_blank')">
+        <div class="ai-num">05</div>
+        <div class="ai-body">
+          <div class="ai-src">Research · Papers</div>
+          <div class="ai-hed">Latest AI research papers — reasoning, agents, and multimodal models</div>
+          <div class="ai-deck">Hugging Face Daily Papers aggregates the most influential AI research. Key themes in 2026: chain-of-thought scaling, agentic workflows, and efficient fine-tuning.</div>
+        </div>
+      </div>
+      <a class="al" href="https://www.anthropic.com/news" target="_blank">Anthropic News</a>
+      <a class="al" href="https://openai.com/news" target="_blank">OpenAI News</a>
+      <a class="al" href="https://huggingface.co/papers" target="_blank">HuggingFace Daily Papers</a>
+      <a class="al" href="https://tldr.tech/ai" target="_blank">TLDR AI — subscribe free</a>
+      <a class="al" href="https://www.therundown.ai" target="_blank">The Rundown AI — subscribe free</a>
+    </div>
+  </div>
+
+  <!-- 10 NYT GAMES -->
+  <div class="section" id="s10">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">10</span><span class="sh-title">NYT Games</span></div>
+      <div class="sh-r"><span class="sh-sub">Wordle · Connections · Crossword · Strands</span><span class="sh-hint">Hover to open</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="game-grid">
+        <a class="game-tile" href="https://www.nytimes.com/games/wordle/index.html" target="_blank">
+          <div class="game-cat">Word · Daily</div>
+          <div class="game-title">Wordle</div>
+          <div class="game-desc">Guess the five-letter word in six tries. One new puzzle every day. Share your result without spoilers.</div>
+          <div class="game-arr">→</div>
+        </a>
+        <a class="game-tile" href="https://www.nytimes.com/games/connections" target="_blank">
+          <div class="game-cat">Grouping · Daily</div>
+          <div class="game-title">Connections</div>
+          <div class="game-desc">Find the four groups of four words that share something in common. Difficulty increases each row.</div>
+          <div class="game-arr">→</div>
+        </a>
+        <a class="game-tile" href="https://www.nytimes.com/crosswords" target="_blank">
+          <div class="game-cat">Crossword · Daily</div>
+          <div class="game-title">Mini Crossword</div>
+          <div class="game-desc">A quick 5×5 crossword puzzle. New puzzle each morning. Great for a fast mental warm-up.</div>
+          <div class="game-arr">→</div>
+        </a>
+        <a class="game-tile" href="https://www.nytimes.com/games/strands" target="_blank">
+          <div class="game-cat">Word search · Daily</div>
+          <div class="game-title">Strands</div>
+          <div class="game-desc">Find theme words hidden in a grid of letters. Every puzzle has a unique theme connecting all answers.</div>
+          <div class="game-arr">→</div>
+        </a>
+        <a class="game-tile" href="https://www.nytimes.com/games/spelling-bee" target="_blank">
+          <div class="game-cat">Word · Daily</div>
+          <div class="game-title">Spelling Bee</div>
+          <div class="game-desc">How many words can you make from seven letters? Must use the centre letter. Reach Genius level.</div>
+          <div class="game-arr">→</div>
+        </a>
+        <a class="game-tile" href="https://www.nytimes.com/games" target="_blank">
+          <div class="game-cat">All Games</div>
+          <div class="game-title">NYT Games Hub</div>
+          <div class="game-desc">Vertex, Letter Boxed, Tiles, and more. All daily NYT puzzle games in one place.</div>
+          <div class="game-arr">→</div>
+        </a>
+      </div>
+    </div>
+  </div>
+
+  <!-- 11 QUIZ -->
+  <div class="section" id="s11">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">11</span><span class="sh-title">Daily Quiz</span></div>
+      <div class="sh-r"><span class="sh-sub">Advertiser quiz · General knowledge</span><span class="sh-hint">Hover to open</span><span class="sh-badge m" id="quiz-score-badge">—</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:16px;border-bottom:1px solid var(--rule);padding-bottom:10px;">Question <span id="q-num">1</span> of <span id="q-total">5</span></p>
+          <div class="quiz-box">
+            <div class="quiz-q" id="quiz-q">Loading question…</div>
+            <div class="quiz-opts" id="quiz-opts"></div>
+            <div class="quiz-feedback" id="quiz-fb"></div>
+          </div>
+          <button class="al" id="quiz-next-btn" onclick="nextQ()" style="display:none;">Next question</button>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:14px;border-bottom:1px solid var(--rule);padding-bottom:10px;">Score</p>
+          <div class="mstrip" style="border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);">
+            <div class="met"><div class="met-n" id="q-correct">0</div><div class="met-l">Correct</div></div>
+            <div class="met"><div class="met-n" id="q-wrong">0</div><div class="met-l">Wrong</div></div>
+            <div class="met"><div class="met-n" id="q-pct">—</div><div class="met-l">Score</div></div>
+          </div>
+          <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--ink3);line-height:1.8;margin-top:16px;">General knowledge questions rotate daily. Answer all five to see your final score.</p>
+          <a class="al" href="https://www.advertiser.com.au" target="_blank">The Advertiser daily quiz (subscribe)</a>
+          <a class="al" href="https://opentdb.com" target="_blank">Open Trivia DB — free rotating questions</a>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 12 BRAIN GAME -->
+  <div class="section" id="s12">
+    <div class="sh">
+      <div class="sh-l"><span class="sh-num">12</span><span class="sh-title">Brain Training</span></div>
+      <div class="sh-r"><span class="sh-sub">Choose your app</span><span class="sh-hint">Hover to open</span></div>
+    </div>
+    <div class="sb">
+      <div class="br"></div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;border-top:1px solid var(--rule);border-bottom:1px solid var(--rule);margin-bottom:20px;">
+        <div style="padding:20px 20px 20px 0;border-right:1px solid var(--rule);">
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;">Primary — language and maths</p>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;line-height:1;color:var(--ink);margin-bottom:8px;">Elevate</div>
+          <div style="font-size:11px;font-weight:300;color:var(--ink2);line-height:1.7;">Writing, maths, comprehension — translates directly to WSA work performance. 5 min/day. iOS and Android.</div>
+          <a class="al" href="https://elevateapp.com" target="_blank">Open Elevate</a>
+        </div>
+        <div style="padding:20px 0 20px 20px;">
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:8px;">Secondary — memory and attention</p>
+          <div style="font-family:'Cormorant Garamond',serif;font-size:28px;font-weight:300;line-height:1;color:var(--ink);margin-bottom:8px;">Lumosity</div>
+          <div style="font-size:11px;font-weight:300;color:var(--ink2);line-height:1.7;">Memory, attention, processing speed. Streak system that pairs naturally with your Daily Log gamified routine.</div>
+          <a class="al" href="https://www.lumosity.com" target="_blank">Open Lumosity</a>
+        </div>
+      </div>
+      <div style="display:none">REMOVED_PLACEHOLDER </div>
+      </div>
+      <p style="font-family:'Cormorant Garamond',serif;font-style:italic;font-size:14px;color:var(--ink3);line-height:1.9;margin-top:20px;">Popular options to consider: Lumosity (memory & attention), Elevate (language & maths), Peak (problem-solving), BrainHQ (processing speed), Dual N-Back (working memory), Cambridge Brain Sciences. Tell me which one and I'll embed it here.</p>
+      <div class="game-grid" style="margin-top:16px;">
+        <a class="game-tile" href="https://www.lumosity.com" target="_blank"><div class="game-cat">Memory · Attention</div><div class="game-title">Lumosity</div><div class="game-desc">Daily brain workouts across memory, attention, speed, and flexibility.</div><div class="game-arr">→</div></a>
+        <a class="game-tile" href="https://elevateapp.com" target="_blank"><div class="game-cat">Language · Maths</div><div class="game-title">Elevate</div><div class="game-desc">Writing, speaking, and maths skills built through rapid daily sessions.</div><div class="game-arr">→</div></a>
+        <a class="game-tile" href="https://www.peak.net" target="_blank"><div class="game-cat">Problem-solving</div><div class="game-title">Peak</div><div class="game-desc">Personalised brain games backed by neuroscience research.</div><div class="game-arr">→</div></a>
+        <a class="game-tile" href="https://www.brainhq.com" target="_blank"><div class="game-cat">Processing speed</div><div class="game-title">BrainHQ</div><div class="game-desc">Posit Science's clinically validated brain training exercises.</div><div class="game-arr">→</div></a>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- 13 BOOKS & GOODREADS -->
+  <div class="section" id="s13">
+    <div class="sh"><div class="sh-l"><span class="sh-num">13</span><span class="sh-title">Books</span></div><div class="sh-r"><span class="sh-sub">Goodreads &amp; reading list</span><span class="sh-hint">Hover to open</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Friends reading now &mdash; from Goodreads</p>
+          <div class="ai-item" onclick="window.open('https://www.goodreads.com','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Goodreads &middot; 20 Apr 2026 &middot; from your inbox</div><div class="ai-hed">Yesteryear &mdash; Caro Claire Burke</div><div class="ai-deck">Lizzie rated this "fucking excellent" on your Goodreads feed. Historical fiction &middot; mystery. Nicola and Brittany also active on your feed this week.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://substack.com','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">The Reading List &middot; Substack &middot; 19 Apr 2026</div><div class="ai-hed">The One Habit I Use to Read 50+ Books a Year</div><div class="ai-deck">For anyone who loves reading but cannot seem to stick with it. Practical habit-forming approaches from your newsletter inbox.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://substack.com','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Substack &middot; 19 Apr 2026</div><div class="ai-hed">Media To Consume This Week Instead of Doomscrolling</div><div class="ai-deck">Philosophy, short stories, zines, activism, essays, art and more &mdash; curated reading by and for curious people.</div></div></div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Worth reading &mdash; 2025-26 picks</p>
+          <div class="ai-item"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Science &middot; Health &middot; Longevity</div><div class="ai-hed">Outlive &mdash; Peter Attia</div><div class="ai-deck">The science and art of longevity. Covers exercise, nutrition, sleep and mental health through a rigorous medical lens. Essential for your health-focused mindset.</div></div></div>
+          <div class="ai-item"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Non-fiction &middot; Behaviour</div><div class="ai-hed">Same as Ever &mdash; Morgan Housel</div><div class="ai-deck">A guide to what never changes. Why understanding timeless human behaviour matters more than predicting the future.</div></div></div>
+          <div class="ai-item"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Literary fiction &middot; Multigenerational</div><div class="ai-hed">The Covenant of Water &mdash; Abraham Verghese</div><div class="ai-deck">A saga spanning India from 1900 to 1977. Deeply human, beautifully written &mdash; one of the great recent literary novels.</div></div></div>
+          <div class="ai-item"><div class="ai-num">04</div><div class="ai-body"><div class="ai-src">Fiction &middot; Pulitzer Prize</div><div class="ai-hed">Demon Copperhead &mdash; Barbara Kingsolver</div><div class="ai-deck">A retelling of David Copperfield set in Appalachian opioid epidemic America. Devastating and essential reading.</div></div></div>
+        </div>
+      </div>
+      <a class="al" href="https://www.goodreads.com/friend/updates" target="_blank">Goodreads &mdash; friends updates</a>
+      <a class="al" href="https://www.goodreads.com" target="_blank">Goodreads</a>
+    </div>
+  </div>
+
+  <!-- 14 FLORENCE -->
+  <div class="section" id="s14">
+    <div class="sh"><div class="sh-l"><span class="sh-num">14</span><span class="sh-title">Florence</span></div><div class="sh-r"><span class="sh-sub">Development &middot; Milestones &middot; Apps later</span><span class="sh-hint">Hover to open</span><span class="sh-badge g">Growing</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Florence today</p>
+          <div class="mstrip">
+            <div class="met"><div class="met-n" id="flo-m">--</div><div class="met-l">Months old</div></div>
+            <div class="met"><div class="met-n">12+</div><div class="met-l">Milestones this stage</div></div>
+            <div class="met" style="font-family:'Cormorant Garamond',serif;font-style:italic;"><div class="met-n" style="font-size:24px;">Jul 26</div><div class="met-l">Christening</div></div>
+          </div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;">First year milestones</p>
+          <div class="ai-item"><div class="ai-num" style="color:var(--green)">&#10003;</div><div class="ai-body"><div class="ai-src">6&ndash;8 weeks</div><div class="ai-hed">Social smiling</div><div class="ai-deck">Smiling in response to faces and voices &mdash; the first key social and emotional milestone.</div></div></div>
+          <div class="ai-item"><div class="ai-num" style="color:var(--green)">&#10003;</div><div class="ai-body"><div class="ai-src">3&ndash;4 months</div><div class="ai-hed">Head control</div><div class="ai-deck">Holding head steady during tummy time &mdash; the foundation for all motor development to follow.</div></div></div>
+          <div class="ai-item"><div class="ai-num" style="color:var(--gold)">&#8250;</div><div class="ai-body"><div class="ai-src">4&ndash;6 months</div><div class="ai-hed">Rolling over</div><div class="ai-deck">Rolling tummy to back then back to tummy. Typically starts around 4 months.</div></div></div>
+          <div class="ai-item"><div class="ai-num" style="color:var(--gold)">&#8250;</div><div class="ai-body"><div class="ai-src">6&ndash;8 months</div><div class="ai-hed">Sitting unsupported</div><div class="ai-deck">Sitting independently without hands. Enables new modes of play and exploration.</div></div></div>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">8&ndash;10 months</div><div class="ai-hed">Crawling and pulling to stand</div><div class="ai-deck">Exploring space independently. Building muscle strength for standing then walking.</div></div></div>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">10&ndash;14 months</div><div class="ai-hed">First words</div><div class="ai-deck">Mama, dada, or similar. Language development accelerates dramatically in year one.</div></div></div>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">9&ndash;15 months</div><div class="ai-hed">First steps</div><div class="ai-deck">Independent walking &mdash; one of the most celebrated milestones of the first year.</div></div></div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">From your inbox</p>
+          <div class="ai-item" onclick="window.open('https://www.sarahandsebastian.com','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Sarah &amp; Sebastian &middot; 20 Apr 2026</div><div class="ai-hed">Documenting Modern Motherhood &mdash; Julia van Os</div><div class="ai-deck">Julia van Os on identity, independence and purpose &mdash; what motherhood does to your sense of self and ambition. From today's inbox.</div></div></div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-top:20px;margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Apps to add later</p>
+          <div class="ai-item"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Sleep &middot; Feeding &middot; Tracking</div><div class="ai-hed">Huckleberry</div><div class="ai-deck">Track Florence's sleep, feeds and milestones. SweetSpot sleep prediction — trusted by paediatric sleep consultants. You have this app &mdash; connect when ready and I will embed it here.</div></div></div>
+          <div class="ai-item"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Mental development leaps</div><div class="ai-hed">Wonder Weeks</div><div class="ai-deck">Tracks developmental leaps and explains fussy phases &mdash; invaluable in the first two years.</div></div></div>
+          <div class="ai-item"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Feeding &middot; Diapers &middot; Sleep logs</div><div class="ai-hed">Baby Connect</div><div class="ai-deck">Comprehensive daily logging for all baby activities with charts and trends over time.</div></div></div>
+        </div>
+      </div>
+      <a class="al" href="https://huckleberryapp.com" target="_blank">Huckleberry</a>
+      <a class="al" href="https://www.thewonderweeks.com" target="_blank">Wonder Weeks</a>
+    </div>
+  </div>
+
+  <!-- 15 MUSIC -->
+  <div class="section" id="s15">
+    <div class="sh"><div class="sh-l"><span class="sh-num">15</span><span class="sh-title">Music</span></div><div class="sh-r"><span class="sh-sub">Like a Version &middot; Tiny Desk &middot; Pitchfork</span><span class="sh-hint">Hover to open</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">From your Pitchfork inbox this week</p>
+          <div class="ai-item" onclick="window.open('https://pitchfork.com','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Pitchfork &middot; Hot Links &middot; 20 Apr 2026</div><div class="ai-hed">The Strokes, Beth Orton, Madonna</div><div class="ai-deck">Beth Orton announces new album. Jessie Ware's new album reviewed. Plus Pitchfork editorial on what matters in music right now.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://pitchfork.com','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Pitchfork &middot; Sunday Review &middot; 19 Apr 2026</div><div class="ai-hed">Dido &mdash; Life for Rent (Sunday Review)</div><div class="ai-deck">Pitchfork revisits a fascinatingly normal 2003 pop album. A classic Dido record given the Sunday Review treatment.</div></div></div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Weekly sessions to watch</p>
+          <div class="ai-item" onclick="window.open('https://www.youtube.com/@triplejlikeaversion','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">triple j &middot; Like a Version &middot; Every Friday</div><div class="ai-hed">Like a Version &mdash; this week's cover</div><div class="ai-deck">Every Friday morning an artist performs a live cover of a song they love at triple j. Australia's best music session &mdash; find this week's on YouTube.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.youtube.com/@nprmusic','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">NPR Music &middot; Tiny Desk &middot; Weekly</div><div class="ai-hed">Tiny Desk Concert &mdash; latest session</div><div class="ai-deck">Intimate live performances at Bob Boilen's desk at NPR HQ. Weekly new artist. One of the best live music formats on the internet.</div></div></div>
+        </div>
+      </div>
+      <a class="al" href="https://www.youtube.com/@triplejlikeaversion" target="_blank">Like a Version &mdash; triple j YouTube</a>
+      <a class="al" href="https://www.youtube.com/@nprmusic" target="_blank">NPR Tiny Desk &mdash; YouTube</a>
+      <a class="al" href="https://pitchfork.com" target="_blank">Pitchfork</a>
+    </div>
+  </div>
+
+  <!-- 16 TRAILERS -->
+  <div class="section" id="s16">
+    <div class="sh"><div class="sh-l"><span class="sh-num">16</span><span class="sh-title">Trailers</span></div><div class="sh-r"><span class="sh-sub">Film &middot; TV &middot; Streaming AU</span><span class="sh-hint">Hover to open</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Latest movie trailers</p>
+          <div class="ai-item" onclick="window.open('https://letterboxd.com','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Letterboxd &middot; from your inbox &middot; Apr 2026</div><div class="ai-hed">Letterboxd Rushes &mdash; your weekly friends digest</div><div class="ai-deck">Your Letterboxd digest arrives weekly in Gmail. Activity from your network, community picks and Shelf Life film restoration picks &mdash; already live in your inbox.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.rottentomatoes.com/trailers','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Rotten Tomatoes &middot; Trailers</div><div class="ai-hed">RT new trailers with critic scores</div><div class="ai-deck">Curated latest trailers paired with critic scores. Best single destination to discover what's coming to cinemas and streaming.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.imdb.com/trailers/','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">IMDB &middot; Trailers</div><div class="ai-hed">IMDB most anticipated trailers</div><div class="ai-deck">Trailers ranked by IMDB user interest. Find what the film community is most excited about this week.</div></div></div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Streaming &mdash; Australia</p>
+          <div class="ai-item" onclick="window.open('https://www.netflix.com/au','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Netflix &middot; Australia</div><div class="ai-hed">Netflix new arrivals AU</div><div class="ai-deck">Trailers and previews for upcoming Netflix originals and new releases in Australia.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.stan.com.au','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Stan &middot; Australia</div><div class="ai-hed">Stan new shows and movies</div><div class="ai-deck">Strong US and Australian original library. Great for Paramount+ content.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://iview.abc.net.au','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">ABC iview &middot; Free</div><div class="ai-hed">ABC iview &mdash; Australian content</div><div class="ai-deck">Free Australian television streaming. News, drama, documentaries and ABC Kids. Great for Florence later too.</div></div></div>
+        </div>
+      </div>
+      <a class="al" href="https://letterboxd.com" target="_blank">Letterboxd — film diary and discovery</a>
+      <a class="al" href="https://www.rottentomatoes.com/trailers" target="_blank">Rotten Tomatoes — new trailers</a>
+      <a class="al" href="https://www.justwatch.com/au" target="_blank">JustWatch — find on AU streaming</a>
+    </div>
+  </div>
+
+  <!-- 17 WINE -->
+  <div class="section" id="s17">
+    <div class="sh"><div class="sh-l"><span class="sh-num">17</span><span class="sh-title">Wine</span></div><div class="sh-r"><span class="sh-sub">Different Drop &middot; Ed Cellars &middot; Regions</span><span class="sh-hint">Hover to open</span><span class="sh-badge w">New arrivals</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Different Drop &mdash; from your inbox this week</p>
+          <div class="ai-item" onclick="window.open('https://www.differentdrop.com','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Different Drop &middot; 20 Apr 2026</div><div class="ai-hed">Paralian Shiraz &mdash; 97 points, exceptional value</div><div class="ai-deck">Skye Salter and Charlie Seppelt &mdash; husband-and-wife team with serious winemaking credentials. New arrival in your inbox today.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.differentdrop.com','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Different Drop &middot; 18 Apr 2026</div><div class="ai-hed">Vanguardist V Grenache 2025 + 99pt Moss Wood Cabernet</div><div class="ai-deck">Huge week at DD: Vanguardist V Grenache 2025, Grenache Gris/Blanc Masterclass Pack, plus Canberra's Mount Majura.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.vivino.com','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Vivino &middot; 20 Apr 2026</div><div class="ai-hed">4.1-rated, save 76% &mdash; $19.90 per bottle</div><div class="ai-deck">A bestseller returns at its sharpest ever price. Be quick &mdash; this week only. From your Vivino inbox.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://wine.penfolds.com','_blank')"><div class="ai-num">04</div><div class="ai-body"><div class="ai-src">Penfolds &middot; 18 Apr 2026</div><div class="ai-hed">Celebrate 75 years of Grange at Magill Estate</div><div class="ai-deck">You're invited to celebrate 75 years of Grange at Magill Estate. A historic moment for one of Australia's most iconic wines.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.decanter.com','_blank')"><div class="ai-num">05</div><div class="ai-body"><div class="ai-src">Decanter &middot; 20 Apr 2026</div><div class="ai-hed">Verdicchio &mdash; multifaceted wines laden with soul</div><div class="ai-deck">Honesty should be the best policy for wine critics. Decanter's deep dive into the Verdicchio grape and its underrated regional expression.</div></div></div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Adelaide &mdash; local shops &mdash; from your inbox</p>
+          <div class="ai-item" onclick="window.open('https://www.edinburgh.com.au','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Edinburgh Cellars &middot; Adelaide &middot; 2 Apr 2026</div><div class="ai-hed">New Leeuwin Art Series Chardonnay &mdash; Easter trading</div><div class="ai-deck">Shiraz Mataro from Wendouree Road Clare plus a Disciple of Anselme Selosse. From your Edinburgh Cellars inbox with Easter trading hours.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.edcellars.com.au','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Independent bottle shop &middot; Adelaide</div><div class="ai-hed">Ed Cellars Adelaide</div><div class="ai-deck">One of Adelaide's best independent wine retailers. Curated selection focused on small producers and natural wine.</div></div></div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-top:20px;margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">SA wine regions</p>
+          <div class="ai-item"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Shiraz &middot; Grenache &middot; Riesling</div><div class="ai-hed">Barossa Valley</div><div class="ai-deck">Australia's most celebrated red wine region. Old-vine Shiraz with distinctive richness and power.</div></div></div>
+          <div class="ai-item"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Riesling &middot; Shiraz</div><div class="ai-hed">Clare Valley</div><div class="ai-deck">Benchmark dry Riesling with citrus and mineral notes. One hour north of Adelaide.</div></div></div>
+          <div class="ai-item"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Shiraz &middot; Grenache &middot; Fiano</div><div class="ai-hed">McLaren Vale</div><div class="ai-deck">Coastal Mediterranean climate producing generous reds and increasingly interesting Italian varieties.</div></div></div>
+          <div class="ai-item"><div class="ai-num">04</div><div class="ai-body"><div class="ai-src">Chardonnay &middot; Pinot Noir</div><div class="ai-hed">Adelaide Hills</div><div class="ai-deck">Cool climate, elegant whites and lighter reds. Just 40 minutes from the Adelaide CBD.</div></div></div>
+        </div>
+      </div>
+      <a class="al" href="https://www.differentdrop.com" target="_blank">Different Drop &mdash; new arrivals</a>
+      <a class="al" href="https://www.edcellars.com.au" target="_blank">Ed Cellars Adelaide</a>
+      <a class="al" href="https://www.vivino.com" target="_blank">Vivino</a>
+      <a class="al" href="https://www.decanter.com" target="_blank">Decanter</a>
+    </div>
+  </div>
+
+  <!-- 18 GARDEN -->
+  <div class="section" id="s18">
+    <div class="sh"><div class="sh-l"><span class="sh-num">18</span><span class="sh-title">Garden</span></div><div class="sh-r"><span class="sh-sub">Timetable &middot; April&ndash;May tasks</span><span class="sh-hint">Hover to open</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;font-style:italic;color:var(--ink);margin-bottom:14px;">April &mdash; Autumn tasks</p>
+          <div class="ai-item"><div class="ai-num" style="color:var(--green)">&#10003;</div><div class="ai-body"><div class="ai-src">Now &middot; Citrus</div><div class="ai-hed">Plant companion crops around citrus</div><div class="ai-deck">Nasturtiums, comfrey and borage near citrus improve soil fertility and attract beneficial insects.</div></div></div>
+          <div class="ai-item"><div class="ai-num" style="color:var(--green)">&#10003;</div><div class="ai-body"><div class="ai-src">Now &middot; Fertilising</div><div class="ai-hed">Apply citrus fertiliser &mdash; second autumn window</div><div class="ai-deck">Autumn is the second fertiliser window. Slow-release balanced fertiliser before winter slowdown.</div></div></div>
+          <div class="ai-item"><div class="ai-num" style="color:var(--gold)">&#8250;</div><div class="ai-body"><div class="ai-src">After leaf drop &middot; Figs</div><div class="ai-hed">Prune fig trees</div><div class="ai-deck">Remove crossed branches and open the centre for airflow. Keep dormant pruning minimal to avoid sap loss.</div></div></div>
+          <div class="ai-item"><div class="ai-num" style="color:var(--gold)">&#8250;</div><div class="ai-body"><div class="ai-src">Autumn &middot; Perennials</div><div class="ai-hed">Divide and replant tractor seat plants (Ligularia)</div><div class="ai-deck">Autumn is ideal for dividing Ligularia. Replant in damp shaded spots with compost amendment.</div></div></div>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">Now &middot; Veg bed</div><div class="ai-hed">Start winter vegetable beds</div><div class="ai-deck">Sow broad beans, peas, kale, silverbeet and spinach. Prepare beds with compost before soil cools.</div></div></div>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">General &middot; Mulching</div><div class="ai-hed">Apply thick mulch before winter</div><div class="ai-deck">Straw or wood chip mulch retains moisture and insulates roots through Adelaide's winter.</div></div></div>
+        </div>
+        <div>
+          <p style="font-family:'Cormorant Garamond',serif;font-size:20px;font-weight:300;font-style:italic;color:var(--ink);margin-bottom:14px;">May &mdash; Coming up</p>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">May &middot; Planting</div><div class="ai-hed">Garlic planting</div><div class="ai-deck">May is the prime garlic planting window in Adelaide. Plant cloves 10cm deep, 15cm apart in well-drained soil.</div></div></div>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">May&ndash;Jun &middot; Citrus</div><div class="ai-hed">Protect cold-sensitive citrus</div><div class="ai-deck">Limes and lemons may need frost cloth on cold nights. Move potted citrus to sheltered positions.</div></div></div>
+          <div class="ai-item"><div class="ai-num">&#8250;</div><div class="ai-body"><div class="ai-src">Compost</div><div class="ai-hed">Turn compost piles</div><div class="ai-deck">Turn piles to accelerate breakdown before adding winter organic matter. Good time to add autumn leaves.</div></div></div>
+          <div style="border:1px dashed var(--rule);padding:32px;text-align:center;margin-top:20px;"><div style="font-family:'Cormorant Garamond',serif;font-size:18px;font-style:italic;color:var(--ink3);margin-bottom:7px;">Your garden timetable connects here</div><div style="font-size:9px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);">Build your full garden calendar with Claude and it plugs in here automatically</div></div>
+        </div>
+      </div>
+      <a class="al" href="https://www.gardenate.com" target="_blank">Gardenate &mdash; Adelaide planting guide</a>
+      <a class="al" href="https://www.abc.net.au/gardening/factsheets/" target="_blank">ABC Gardening Australia</a>
+    </div>
+  </div>
+
+  <!-- 19 AG & WINE NEWS -->
+  <div class="section" id="s19">
+    <div class="sh"><div class="sh-l"><span class="sh-num">19</span><span class="sh-title">Ag &amp; Wine News</span></div><div class="sh-r"><span class="sh-sub">Stock Journal &middot; Wine Business &middot; AU Agriculture</span><span class="sh-hint">Hover to open</span></div></div>
+    <div class="sb">
+      <div class="br"></div>
+      <div class="two">
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">From your inbox &mdash; latest updates</p>
+          <div class="ai-item" onclick="window.open('https://www.stockjournal.com.au','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Stock Journal &middot; 20 Apr 2026</div><div class="ai-hed">All the action and award winners from the 2026 SA Sheep Expo</div><div class="ai-deck">Your morning wrap from the Stock Journal &mdash; daily Australian agricultural briefing. SA's premier livestock event results from today's inbox.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.stockjournal.com.au','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Stock Journal &middot; 19 Apr 2026</div><div class="ai-hed">Cattle operation aims to manage seasonal extremes in northern Australia</div><div class="ai-deck">Adaptive management strategies for NT stations facing increasing rainfall variability and heat stress events.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.madiganmedia.com.au','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Madigan Media &middot; SA Wine Industry &middot; 17 Apr 2026</div><div class="ai-hed">It's going to be good&hellip; once the market improves &mdash; Winemasters SA sale fails</div><div class="ai-deck">Winemasters SA was put up for sale in September but failed to attract a buyer. SA wine industry grapples with a challenging market as the 2026 vintage concludes.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.decanter.com','_blank')"><div class="ai-num">04</div><div class="ai-body"><div class="ai-src">Decanter &middot; 20 Apr 2026</div><div class="ai-hed">Verdicchio &mdash; multifaceted wines laden with soul</div><div class="ai-deck">Honesty should be the best policy for wine critics. Decanter's deep dive into Verdicchio and why critics need to be more candid about this underrated variety.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.pooleywines.com.au','_blank')"><div class="ai-num">05</div><div class="ai-body"><div class="ai-src">Pooley Wines &middot; Tasmania &middot; 19 Apr 2026</div><div class="ai-hed">The Waiting Game &mdash; understanding phenolic ripeness at harvest</div><div class="ai-deck">As harvest arrives in Tasmania, Pooley Wines explains the science of phenolic ripeness &mdash; knowing when a vineyard is truly ready beyond sugar levels alone.</div></div></div>
+        </div>
+        <div>
+          <p style="font-size:8px;letter-spacing:.18em;text-transform:uppercase;color:var(--ink3);margin-bottom:12px;border-bottom:1px solid var(--rule);padding-bottom:8px;">Key sources &mdash; AU Ag &amp; Viticulture</p>
+          <div class="ai-item" onclick="window.open('https://www.stockjournal.com.au','_blank')"><div class="ai-num">01</div><div class="ai-body"><div class="ai-src">Daily morning wrap &middot; in your inbox</div><div class="ai-hed">Stock Journal</div><div class="ai-deck">Australia's leading rural news source. Livestock, cropping, machinery, markets and SA agriculture. You receive the daily morning wrap.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.winebiz.com.au','_blank')"><div class="ai-num">02</div><div class="ai-body"><div class="ai-src">Australian wine industry &middot; Trade</div><div class="ai-hed">Wine Business Magazine</div><div class="ai-deck">Australian wine business, viticulture, winemaking, and market news. The industry's primary trade publication.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.wineaustralia.com/news','_blank')"><div class="ai-num">03</div><div class="ai-body"><div class="ai-src">Industry body &middot; Research &amp; export data</div><div class="ai-hed">Wine Australia</div><div class="ai-deck">Official Australian wine industry body. R&amp;D grants, export statistics, market intelligence and research publications.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.decanter.com','_blank')"><div class="ai-num">04</div><div class="ai-body"><div class="ai-src">International &middot; Wine criticism &middot; in your inbox</div><div class="ai-hed">Decanter</div><div class="ai-deck">World-leading wine publication. Reviews, education, news. You receive their newsletter &mdash; this week: Verdicchio multifaceted wines.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.abc.net.au/news/rural','_blank')"><div class="ai-num">05</div><div class="ai-body"><div class="ai-src">Australian agriculture &middot; Free</div><div class="ai-hed">ABC Rural</div><div class="ai-deck">ABC's comprehensive rural and agricultural news coverage. Strong on SA, viticulture and regional issues.</div></div></div>
+          <div class="ai-item" onclick="window.open('https://www.farmonline.com.au','_blank')"><div class="ai-num">06</div><div class="ai-body"><div class="ai-src">National &middot; Grain &middot; Livestock &middot; Horticulture</div><div class="ai-hed">Farm Online</div><div class="ai-deck">National Australian farming news covering grain markets, livestock prices, weather, and rural business across all states.</div></div></div>
+        </div>
+      </div>
+      <a class="al" href="https://www.stockjournal.com.au" target="_blank">Stock Journal — morning wrap (subscribed)</a>
+      <a class="al" href="https://www.madiganmedia.com.au" target="_blank">Madigan Media SA Wine (subscribed)</a>
+      <a class="al" href="https://www.winebiz.com.au" target="_blank">Wine Business Magazine AU — subscribe to newsletter</a>
+      <a class="al" href="https://www.wineaustralia.com/news" target="_blank">Wine Australia Weekly — subscribe</a>
+      <a class="al" href="https://www.abc.net.au/news/rural" target="_blank">ABC Rural Daily Email — subscribe free</a>
+    </div>
+  </div>
+
+</main>
+
+<footer>
+  <div class="fl">Command Daily — Adelaide, South Australia</div>
+  <div class="fr" id="ft">—</div>
+</footer>
+
+<script>
+// TIME
+const DAYS=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const MONTHS=['January','February','March','April','May','June','July','August','September','October','November','December'];
+function tick(){
+  const n=new Date(),h=n.getHours(),m=n.getMinutes(),s=n.getSeconds();
+  const ts=(h<10?'0':'')+h+':'+(m<10?'0':'')+m+':'+(s<10?'0':'')+s;
+  document.getElementById('nt').textContent=ts;
+  document.getElementById('ft').textContent=ts;
+  const ds=DAYS[n.getDay()]+', '+n.getDate()+' '+MONTHS[n.getMonth()]+' '+n.getFullYear();
+  document.getElementById('nd').textContent=ds;
+  document.getElementById('hd').textContent=ds+'\u00a0\u00b7\u00a0Adelaide, South Australia';
+  document.getElementById('hg').textContent=(h<12?'Good morning':h<17?'Good afternoon':'Good evening')+', Brian';
+  // Time of day dots
+  ['dot-m','dot-a','dot-e','dot-n'].forEach(id=>{const el=document.getElementById(id);if(el)el.className='tblock-dot';});
+  const dotId=h>=6&&h<12?'dot-m':h>=12&&h<17?'dot-a':h>=17&&h<20?'dot-e':'dot-n';
+  const dotEl=document.getElementById(dotId);if(dotEl)dotEl.className='tblock-dot now';
+}
+tick();setInterval(tick,1000);
+
+// TODAY XP
+function loadTodayStats(){
+  const xp=parseInt(localStorage.getItem('brian_xp')||'0');
+  const streak=parseInt(localStorage.getItem('brian_streak')||'0');
+  const complete=parseInt(localStorage.getItem('brian_complete')||'0');
+  const level=localStorage.getItem('brian_level')||'Starter';
+  const maxXp=parseInt(localStorage.getItem('brian_maxXp')||'150');
+  document.getElementById('xp-n').textContent=xp;
+  document.getElementById('str-n').textContent=streak;
+  document.getElementById('comp-n').textContent=complete+'%';
+  document.getElementById('lvl-n').textContent=level;
+  document.getElementById('xp-lbl').textContent=xp+' / '+maxXp;
+  document.getElementById('xp-bar').style.width=Math.min(100,Math.round(xp/maxXp*100))+'%';
+  document.getElementById('tod-badge').textContent=complete+'% done';
+}
+loadTodayStats();
+
+// CALENDAR
+function buildCal(){
+  const now=new Date();
+  const year=now.getFullYear(),month=now.getMonth();
+  const firstDay=new Date(year,month,1).getDay();
+  const daysInMonth=new Date(year,month+1,0).getDate();
+  const grid=document.getElementById('cal-grid');
+  // remove existing day cells (keep headers)
+  while(grid.children.length>7){grid.removeChild(grid.lastChild);}
+  const events={20:true,24:true,25:true};
+  const offset=(firstDay+6)%7; // Mon start
+  for(let i=0;i<offset;i++){const d=document.createElement('div');d.className='cal-day other-month';const n=document.createElement('span');n.className='cal-day-num';n.textContent=new Date(year,month,1-offset+i).getDate();d.appendChild(n);grid.appendChild(d);}
+  for(let d=1;d<=daysInMonth;d++){
+    const div=document.createElement('div');
+    div.className='cal-day'+(d===now.getDate()?' today':'')+(events[d]?' has-event':'');
+    const n=document.createElement('span');n.className='cal-day-num';n.textContent=d;
+    div.appendChild(n);grid.appendChild(div);
+  }
+}
+buildCal();
+
+// HEALTH
+function getHD(){try{const r=localStorage.getItem('cmd4_hd');if(r){const d=JSON.parse(r);if(d.date===new Date().toDateString())return d;}}catch(e){}return{date:new Date().toDateString()};}
+function saveHDd(d){try{localStorage.setItem('cmd4_hd',JSON.stringify(d));}catch(e){}}
+function setRing(id,pct,circ){const el=document.getElementById(id);if(!el)return;el.style.strokeDashoffset=circ*(1-Math.min(1,pct/100));}
+function setBar(id,pct){const el=document.getElementById(id);if(el)el.style.width=Math.min(100,pct)+'%';}
+function setV(id,v){const el=document.getElementById(id);if(el)el.textContent=v!=null?v:'—';}
+function renderHD(d){
+  setV('rlm',d.move);setV('rle',d.ex);setV('rls',d.stand);setV('rlst',d.steps!=null?d.steps.toFixed(1):null);
+  setV('hsl',d.sleep);setV('hhr',d.hrv);setV('hrhr',d.rhr);setV('hrn',d.run);setV('hpc',d.pace);setV('hwt',d.weight);
+  if(d.move)setRing('rm',Math.round(d.move/500*100),263.9);
+  if(d.ex)setRing('re',Math.round(d.ex/30*100),194.8);
+  if(d.stand)setRing('rs',Math.round(d.stand/12*100),125.7);
+  if(d.sleep)setBar('hslb',Math.round(d.sleep/9*100));
+  if(d.hrv)setBar('hhrb',Math.round(d.hrv/100*100));
+  if(d.rhr)setBar('hrhrb',100-Math.round((d.rhr-40)/60*100));
+  if(d.run)setBar('hrnb',Math.round(d.run/10*100));
+}
+function toggleHF(){document.getElementById('hform').classList.toggle('open');}
+function saveHD(){
+  let d=getHD();const g=id=>{const el=document.getElementById(id);return el&&el.value?parseFloat(el.value):null;};
+  const m={move:'fm',ex:'fe',stand:'fst',steps:'fsteps',sleep:'fsl',hrv:'fhr',rhr:'frhr',run:'frn',pace:'fpc'};
+  Object.entries(m).forEach(([k,id])=>{const v=g(id);if(v!=null)d[k]=v;});
+  saveHDd(d);renderHD(d);toggleHF();
+}
+renderHD(getHD());
+
+// NOOM
+function getND(){try{const r=localStorage.getItem('cmd4_nd');if(r){const d=JSON.parse(r);if(d.date===new Date().toDateString())return d;}}catch(e){}return{date:new Date().toDateString()};}
+function saveNDd(d){try{localStorage.setItem('cmd4_nd',JSON.stringify(d));}catch(e){}}
+function renderN(d){
+  setV('ncal',d.cal!=null?d.cal+'kcal':null);setV('ngr',d.gr);setV('nye',d.ye);setV('nrd',d.rd);
+  setV('nwt',d.wt);setV('nmd',d.md);setV('nwg',d.wg!=null?d.wg+'kg':null);setV('nex',d.ex!=null?d.ex+'m':null);
+  if(d.cal)setBar('ncalb',Math.round(d.cal/1800*100));
+  if(d.gr)setBar('ngrb',Math.round(d.gr/8*100));
+  if(d.ye)setBar('nyeb',Math.round(d.ye/5*100));
+  if(d.rd)setBar('nrdb',Math.round(d.rd/2*100));
+  if(d.wt)setBar('nwtb',Math.round(d.wt/8*100));
+  if(d.md)setBar('nmdb',Math.round(d.md/10*100));
+  if(d.ex)setBar('nexb',Math.round(d.ex/60*100));
+  if(d.cal){document.getElementById('npill').textContent='Logged today';}
+}
+function toggleNF(){document.getElementById('nform').classList.toggle('open');}
+function saveN(){
+  let d=getND();const g=id=>{const el=document.getElementById(id);return el&&el.value?parseFloat(el.value):null;};
+  const m={cal:'nfc',gr:'nfg',ye:'nfy',rd:'nfr',wt:'nfw',md:'nfm',wg:'nfwg',ex:'nfe'};
+  Object.entries(m).forEach(([k,id])=>{const v=g(id);if(v!=null)d[k]=v;});
+  saveNDd(d);renderN(d);toggleNF();
+}
+renderN(getND());
+
+// WEATHER
+async function loadWx(){
+  try{
+    const r=await fetch('https://api.open-meteo.com/v1/forecast?latitude=-34.9285&longitude=138.6007&current=temperature_2m,weathercode,apparent_temperature,relative_humidity_2m,windspeed_10m&daily=temperature_2m_max,temperature_2m_min,precipitation_probability_max&timezone=Australia%2FAdelaide&forecast_days=1');
+    const d=await r.json(),c=d.current,dy=d.daily;
+    const code=c.weathercode;
+    const cond=code<=1?'Clear':code<=3?'Partly Cloudy':code<=48?'Foggy':code<=67?'Rainy':code<=77?'Snow':'Stormy';
+    document.getElementById('wt').textContent=Math.round(c.temperature_2m)+'°';
+    document.getElementById('wc').textContent=cond;
+    document.getElementById('wf').textContent='Feels like '+Math.round(c.apparent_temperature)+'°C';
+    document.getElementById('whi').textContent=Math.round(dy.temperature_2m_max[0])+'°C';
+    document.getElementById('wlo').textContent=Math.round(dy.temperature_2m_min[0])+'°C';
+    document.getElementById('wr').textContent=dy.precipitation_probability_max[0]+'%';
+    document.getElementById('wh').textContent=Math.round(c.relative_humidity_2m)+'%';
+    document.getElementById('ww').textContent=Math.round(c.windspeed_10m)+'km/h';
+    document.getElementById('wpill').textContent=cond;
+  }catch(e){}
+}
+loadWx();
+
+// SPORT
+const sports={
+  afl:{label:'AFL',links:[{l:'AFL.com.au',u:'https://www.afl.com.au'},{l:'Adelaide Crows',u:'https://www.adelaidecrows.com.au'},{l:'Port Adelaide',u:'https://www.portadelaidefc.com.au'}]},
+  sarugby:{label:'SA Rugby',links:[{l:'SA Rugby',u:'https://www.sarugby.com.au'}]},
+  cricket:{label:'Cricket',links:[{l:'Cricket Australia',u:'https://www.cricket.com.au'},{l:'ESPNcricinfo',u:'https://www.espncricinfo.com'}]},
+  tennis:{label:'Tennis',links:[{l:'ATP Tour',u:'https://www.atptour.com'},{l:'WTA',u:'https://www.wtatennis.com'}]},
+  nfl:{label:'NFL',links:[{l:'NFL.com',u:'https://www.nfl.com'}]},
+  nba:{label:'NBA',links:[{l:'NBA.com',u:'https://www.nba.com'}]},
+  superrugby:{label:'Super Rugby',links:[{l:'Super Rugby',u:'https://www.superrugby.com.au'}]},
+  nrl:{label:'NRL',links:[{l:'NRL.com',u:'https://www.nrl.com'}]},
+  soccer:{label:'Soccer',links:[{l:'A-Leagues',u:'https://www.a-leagues.com.au'},{l:'Premier League',u:'https://www.premierleague.com'}]},
+  surfing:{label:'WSL Surfing',links:[{l:'WSL',u:'https://www.worldsurfleague.com'},{l:'Swellnet',u:'https://www.swellnet.com'}]}
+};
+function setSport(key,el){
+  document.querySelectorAll('#sgrid .stile').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  const s=sports[key];
+  document.getElementById('sportpill').textContent=s.label;
+  document.getElementById('sbody').textContent=s.label+' — open below.';
+  document.getElementById('sacts').innerHTML=s.links.map(lk=>'<a class="al" href="'+lk.u+'" target="_blank">'+lk.l+'</a>').join('');
+}
+setSport('afl',document.querySelector('#sgrid .stile'));
+
+// NEWS
+function showSrc(key,el){
+  document.querySelectorAll('#stabs .stab').forEach(t=>t.classList.remove('active'));
+  el.classList.add('active');
+  ['alj','sky','7n','plt','aus','reads'].forEach(k=>{
+    const f=document.getElementById('feed-'+k);
+    if(f)f.style.display=k===key?'block':'none';
+  });
+}
+
+// QUIZ
+const questions=[
+  {q:'What is the capital city of South Australia?',opts:['Melbourne','Adelaide','Sydney','Brisbane'],ans:1,exp:'Adelaide has been the capital of South Australia since the state was founded in 1836.'},
+  {q:'Which country hosted the 2026 FIFA World Cup?',opts:['Australia','USA / Canada / Mexico','Japan','Brazil'],ans:1,exp:'The 2026 World Cup was jointly hosted by the United States, Canada, and Mexico — the first time three nations co-hosted the tournament.'},
+  {q:'What does "HRV" stand for in fitness tracking?',opts:['Heart Rate Velocity','Heart Rate Variability','Heart Rest Value','High Rate Volume'],ans:1,exp:'HRV (Heart Rate Variability) measures the variation in time between heartbeats — a key indicator of recovery and autonomic nervous system health.'},
+  {q:'Which AFL team plays its home games at Adelaide Oval?',opts:['Port Adelaide only','Adelaide Crows only','Both Adelaide Crows and Port Adelaide','Melbourne Demons'],ans:2,exp:'Both the Adelaide Crows and Port Adelaide Power share Adelaide Oval as their home ground.'},
+  {q:'What is the approximate distance of a half marathon?',opts:['10km','15km','21.1km','30km'],ans:2,exp:'A half marathon is 21.0975km — exactly half the 42.195km full marathon distance.'}
+];
+let qIdx=0,correct=0,wrong=0,answered=false;
+function loadQ(){
+  if(qIdx>=questions.length){
+    document.getElementById('quiz-q').textContent='Quiz complete! Final score: '+correct+'/'+questions.length;
+    document.getElementById('quiz-opts').innerHTML='';
+    document.getElementById('quiz-fb').style.display='none';
+    document.getElementById('quiz-next-btn').style.display='none';
+    document.getElementById('q-pct').textContent=Math.round(correct/questions.length*100)+'%';
+    return;
+  }
+  answered=false;
+  const q=questions[qIdx];
+  document.getElementById('q-num').textContent=qIdx+1;
+  document.getElementById('quiz-q').textContent=q.q;
+  document.getElementById('quiz-fb').className='quiz-feedback';
+  document.getElementById('quiz-fb').textContent='';
+  document.getElementById('quiz-next-btn').style.display='none';
+  const opts=document.getElementById('quiz-opts');
+  opts.innerHTML='';
+  q.opts.forEach((o,i)=>{
+    const div=document.createElement('div');
+    div.className='quiz-opt';
+    div.innerHTML='<div class="quiz-opt-dot"></div>'+o;
+    div.onclick=()=>answerQ(i,div);
+    opts.appendChild(div);
+  });
+}
+function answerQ(i,el){
+  if(answered)return;
+  answered=true;
+  const q=questions[qIdx];
+  const allOpts=document.querySelectorAll('.quiz-opt');
+  if(i===q.ans){
+    el.className='quiz-opt selected';correct++;
+    document.getElementById('q-correct').textContent=correct;
+  }else{
+    el.className='quiz-opt wrong';wrong++;
+    allOpts[q.ans].className='quiz-opt selected';
+    document.getElementById('q-wrong').textContent=wrong;
+  }
+  document.getElementById('q-pct').textContent=qIdx<questions.length-1?'—':Math.round(correct/questions.length*100)+'%';
+  const fb=document.getElementById('quiz-fb');
+  fb.textContent=q.exp;
+  fb.className='quiz-feedback on';
+  document.getElementById('quiz-next-btn').style.display='flex';
+  document.getElementById('quiz-score-badge').textContent=correct+'/'+(qIdx+1);
+}
+// Florence age (update DOB when known - placeholder Oct 2025)
+(function(){
+  const dob=new Date(2025,10,9);
+  const now=new Date();
+  const months=Math.max(0,Math.floor((now-dob)/(1000*60*60*24*30.44)));
+  const el=document.getElementById('flo-m');if(el)el.textContent=months;
+})();
+function nextQ(){qIdx++;loadQ();}
+loadQ();
+</script>
+</body>
+</html>
